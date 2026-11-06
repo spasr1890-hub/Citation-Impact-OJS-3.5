@@ -7,16 +7,16 @@ msgstr ""
 "Language: en\n"
 
 msgid "plugins.generic.citationImpact.displayName"
-msgstr "Citation Impact (Dimensions)"
+msgstr "Citation Impact (Dimensions & OpenAlex)"
 
 msgid "plugins.generic.citationImpact.description"
-msgstr "Adds a public citation impact page to the journal, with citation counts from Dimensions for every published article with a DOI."
+msgstr "Adds a public citation impact page to the journal, with citation counts from Dimensions and OpenAlex for every published article with a DOI, a citation badge on article pages and a CSV export."
 
 msgid "plugins.generic.citationImpact.pageTitle"
 msgstr "Citation Impact"
 
 msgid "plugins.generic.citationImpact.lead"
-msgstr "Citations to articles in {$journal}, according to Dimensions."
+msgstr "Citations to articles in {$journal}, according to {$sources}."
 
 msgid "plugins.generic.citationImpact.updated"
 msgstr "Updated {$date}"
@@ -112,7 +112,7 @@ msgid "plugins.generic.citationImpact.shown"
 msgstr "Showing {$shown} of {$total}"
 
 msgid "plugins.generic.citationImpact.source"
-msgstr "Citation data: <a href=\"https://www.dimensions.ai/\" target=\"_blank\" rel=\"noopener\">Dimensions</a>. Counts may differ from Google Scholar, Scopus or Crossref because their coverage differs."
+msgstr "Citation data: {$sources}. Counts may differ from Google Scholar, Scopus or Crossref because their coverage differs."
 
 msgid "plugins.generic.citationImpact.pending"
 msgstr "Some articles have not been checked yet; numbers will grow after the next update."
@@ -124,10 +124,10 @@ msgid "plugins.generic.citationImpact.menuItem.title"
 msgstr "Citation Impact"
 
 msgid "plugins.generic.citationImpact.menuItem.description"
-msgstr "Link to the Citation Impact page (citations from Dimensions)."
+msgstr "Link to the Citation Impact page (citations from Dimensions and OpenAlex)."
 
 msgid "plugins.generic.citationImpact.settings.description"
-msgstr "Citation counts are taken from the free Dimensions Metrics API for every published article with a DOI. Data is refreshed automatically every hour in small batches. Dimensions data is free for non-commercial use; journal sites should contact publishing@digital-science.com."
+msgstr "Citation counts are taken from the free Dimensions Metrics API and OpenAlex for every published article with a DOI. Data is refreshed automatically every hour in small batches. Dimensions data is free for non-commercial use; journal sites should contact publishing@digital-science.com. OpenAlex data is CC0."
 
 msgid "plugins.generic.citationImpact.settings.pagePath"
 msgstr "Page path"
@@ -151,7 +151,7 @@ msgid "plugins.generic.citationImpact.settings.ttlDays"
 msgstr "Re-check each article every (days)"
 
 msgid "plugins.generic.citationImpact.settings.ttlDays.description"
-msgstr "Between 1 and 90. The default of 7 is gentle on the Dimensions service."
+msgstr "Between 1 and 90. The default of 7 is gentle on the Dimensions and OpenAlex services."
 
 msgid "plugins.generic.citationImpact.settings.ttlDays.invalid"
 msgstr "Enter a whole number between 1 and 90."
@@ -160,7 +160,7 @@ msgid "plugins.generic.citationImpact.settings.contactEmail"
 msgstr "Contact email"
 
 msgid "plugins.generic.citationImpact.settings.contactEmail.description"
-msgstr "Sent to Dimensions with each request so they can contact the journal."
+msgstr "Sent to Dimensions and OpenAlex with each request so they can contact the journal."
 
 msgid "plugins.generic.citationImpact.settings.contactEmail.invalid"
 msgstr "Enter a valid email address."
@@ -196,13 +196,13 @@ msgid "plugins.generic.citationImpact.refresh.busy"
 msgstr "Another update is running, waiting…"
 
 msgid "plugins.generic.citationImpact.refresh.backoff"
-msgstr "Dimensions asked us to slow down. Updates resume automatically in 15 minutes."
+msgstr "A citation source asked us to slow down (Dimensions: 15 minutes; OpenAlex: until its daily limit resets). Updates resume automatically."
 
 msgid "plugins.generic.citationImpact.refresh.error"
 msgstr "The server could not be reached. Retrying in 10 seconds…"
 
 msgid "plugins.generic.citationImpact.refresh.stopped"
-msgstr "Stopped after repeated errors from Dimensions. Try again later."
+msgstr "Stopped after repeated errors from a citation source. Try again later."
 
 msgid "plugins.generic.citationImpact.refresh.help"
 msgstr "Only needed for the first fill or after big changes; afterwards the plugin updates itself every hour."
@@ -235,7 +235,7 @@ msgid "plugins.generic.citationImpact.settings.window.description"
 msgstr "Publication years summed for the \"last 3 years\" citation count (the ARJUNA scientific impact criterion). Match the window your assessor uses."
 
 msgid "plugins.generic.citationImpact.sourceChip"
-msgstr "Data: Dimensions"
+msgstr "Data: {$sources}"
 
 msgid "plugins.generic.citationImpact.stat.recentLine"
 msgstr "{$number} of them in the last 2 years"
@@ -318,3 +318,90 @@ msgstr "Enter a hex colour such as #1e6292, or leave the field empty."
 
 msgid "plugins.generic.citationImpact.chart.citation"
 msgstr "citation"
+
+msgid "plugins.generic.citationImpact.sourceMerged"
+msgstr "Each article counts the higher of the two numbers, because each database misses some citing works."
+
+msgid "plugins.generic.citationImpact.and"
+msgstr "and"
+
+msgid "plugins.generic.citationImpact.openAlexDetails"
+msgstr "Details on OpenAlex"
+
+msgid "plugins.generic.citationImpact.sourceCount"
+msgstr "{$source}: {$n}"
+
+msgid "plugins.generic.citationImpact.settings.sources"
+msgstr "Citation sources"
+
+msgid "plugins.generic.citationImpact.settings.sources.description"
+msgstr "With both, each article counts the higher of the two numbers."
+
+msgid "plugins.generic.citationImpact.settings.sources.both"
+msgstr "Dimensions + OpenAlex (recommended)"
+
+msgid "plugins.generic.citationImpact.settings.sources.dimensions"
+msgstr "Dimensions only"
+
+msgid "plugins.generic.citationImpact.settings.sources.openalex"
+msgstr "OpenAlex only"
+
+msgid "plugins.generic.citationImpact.settings.openAlexKey"
+msgstr "OpenAlex API key (optional)"
+
+msgid "plugins.generic.citationImpact.settings.openAlexKey.description"
+msgstr "Without a key, OpenAlex gives a small free daily budget shared with every site on your server's IP address. A free key at openalex.org/settings/api gives the journal its own budget."
+
+msgid "plugins.generic.citationImpact.settings.openAlexKey.invalid"
+msgstr "The OpenAlex API key looks wrong: letters, digits, - and _ only."
+
+msgid "plugins.generic.citationImpact.settings.articleBadge"
+msgstr "Show the citation count on article pages (articles with at least one citation)"
+
+msgid "plugins.generic.citationImpact.status.oaWait"
+msgstr "OpenAlex daily limit reached; OpenAlex updates resume after {$date}. Add an API key to avoid this."
+
+msgid "plugins.generic.citationImpact.badge.title"
+msgstr "Citations"
+
+msgid "plugins.generic.citationImpact.badge.merged"
+msgstr "Highest count of Dimensions and OpenAlex."
+
+msgid "plugins.generic.citationImpact.csv.download"
+msgstr "Download CSV"
+
+msgid "plugins.generic.citationImpact.csv.help"
+msgstr "All articles with their citation counts, for accreditation evidence (opens in Excel)."
+
+msgid "plugins.generic.citationImpact.csv.rank"
+msgstr "No."
+
+msgid "plugins.generic.citationImpact.csv.title"
+msgstr "Title"
+
+msgid "plugins.generic.citationImpact.csv.authors"
+msgstr "Authors"
+
+msgid "plugins.generic.citationImpact.csv.date"
+msgstr "Date published"
+
+msgid "plugins.generic.citationImpact.csv.url"
+msgstr "Article URL"
+
+msgid "plugins.generic.citationImpact.csv.cites"
+msgstr "Citations"
+
+msgid "plugins.generic.citationImpact.csv.citesSource"
+msgstr "Citations ({$source})"
+
+msgid "plugins.generic.citationImpact.csv.window"
+msgstr "Published {$from}–{$to}"
+
+msgid "plugins.generic.citationImpact.csv.link"
+msgstr "Link {$source}"
+
+msgid "plugins.generic.citationImpact.csv.yes"
+msgstr "Yes"
+
+msgid "plugins.generic.citationImpact.csv.no"
+msgstr "No"

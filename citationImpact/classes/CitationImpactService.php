@@ -27,6 +27,7 @@ class CitationImpactService {
 
 	const PLUGIN_NAME = 'citationimpactplugin';
 	const DEFAULT_API = 'https://metrics-api.dimensions.ai/doi/';
+	const OPENALEX_API = 'https://api.openalex.org';
 	const STATUS_PUBLISHED = 3;
 
 	/** @var int */
@@ -65,6 +66,9 @@ class CitationImpactService {
 			'pagePath' => (string) $get('pagePath', 'impact'),
 			'apiUrl' => (string) $get('apiUrl', self::DEFAULT_API),
 			'accentColor' => (string) $get('accentColor', ''),
+			'sources' => in_array($get('sources', 'both'), array('both', 'dimensions', 'openalex'), true) ? $get('sources', 'both') : 'both',
+			'openAlexKey' => trim((string) $get('openAlexKey', '')),
+			'articleBadge' => (string) $get('articleBadge', '1') !== '0',
 		);
 	}
 
@@ -139,6 +143,18 @@ class CitationImpactService {
 			$data['items'] = array();
 		}
 		return $data;
+	}
+
+	/**
+	 * The stored numbers of one DOI (read once per request), or null.
+	 */
+	public function item($doi) {
+		static $cache = array();
+		if (!isset($cache[$this->contextId])) {
+			$cache[$this->contextId] = $this->readStore()['items'];
+		}
+		$k = strtolower((string) $doi);
+		return isset($cache[$this->contextId][$k]) ? $cache[$this->contextId][$k] : null;
 	}
 
 	protected function writeStore(array $data) {
@@ -300,8 +316,66 @@ class CitationImpactService {
 	//
 
 	/**
-	 * Check stale DOIs against the Dimensions Metrics API.
-	 * @param int $limit Max DOIs to request in this call.
+	 * @return string[] Enabled sources, in refresh order ("openalex" first: it is batched and fast).
+	 */
+	public function sources() {
+		switch ($this->settings['sources']) {
+			case 'dimensions': return array('dimensions');
+			case 'openalex': return array('openalex');
+			default: return array('openalex', 'dimensions');
+		}
+	}
+
+	/**
+	 * Per-source fields inside a store item. Dimensions keeps the 1.x keys
+	 * (c, r, f, s, t) so existing data stays valid; OpenAlex uses o-prefixed ones.
+	 */
+	protected static function keys($source) {
+		return $source === 'openalex'
+			? array('c' => 'oc', 'r' => 'or', 's' => 'os', 't' => 'ot')
+			: array('c' => 'c', 'r' => 'r', 's' => 's', 't' => 't');
+	}
+
+	/**
+	 * @return bool The item has an answer (found or not found) from this source.
+	 */
+	public static function checkedBy($m, $source) {
+		$k = self::keys($source);
+		return is_array($m) && isset($m[$k['s']]) && ($m[$k['s']] === 'ok' || $m[$k['s']] === 'nf');
+	}
+
+	/**
+	 * Numbers of one article across the enabled sources. The citation count used
+	 * everywhere is the highest per article, since each index misses some citing works.
+	 *
+	 * @return array {ok, c, r, f, cd, co, oid}; ok is true once any enabled source answered.
+	 */
+	public function merge($m) {
+		$out = array('ok' => false, 'c' => null, 'r' => null, 'f' => null, 'cd' => null, 'co' => null, 'oid' => null);
+		foreach ($this->sources() as $source) {
+			if (!self::checkedBy($m, $source)) {
+				continue;
+			}
+			$k = self::keys($source);
+			$c = (int) $m[$k['c']];
+			$r = (int) (isset($m[$k['r']]) ? $m[$k['r']] : 0);
+			$out['ok'] = true;
+			$out['c'] = max((int) $out['c'], $c);
+			$out['r'] = max((int) $out['r'], $r);
+			if ($source === 'dimensions') {
+				$out['cd'] = $c;
+				$out['f'] = isset($m['f']) ? $m['f'] : null;
+			} else {
+				$out['co'] = $c;
+				$out['oid'] = isset($m['oid']) ? $m['oid'] : null;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Re-check stale DOIs against the enabled sources.
+	 * @param int $limit Max DOIs to look up per source in this call.
 	 * @param float $deadline microtime(true) after which to stop.
 	 * @param bool $force Re-check everything.
 	 * @return array Status report.
@@ -315,139 +389,319 @@ class CitationImpactService {
 		try {
 			$articles = $this->getArticles();
 			$store = $this->readStore();
-			$items = $store['items'];
-
-			if (!$force && !empty($store['backoffUntil']) && $store['backoffUntil'] > time()) {
-				return $this->report('backoff', $articles, $items, 0, 0, array('until' => (int) $store['backoffUntil']));
-			}
 
 			// Forget DOIs that are no longer published.
 			$keep = array();
 			foreach ($articles as $a) {
 				$keep[strtolower($a['doi'])] = true;
 			}
-			$items = array_intersect_key($items, $keep);
-
-			$now = time();
-			$ttl = (int) $this->settings['ttlDays'] * 86400;
-			$queue = array();
-			foreach ($articles as $a) {
-				$k = strtolower($a['doi']);
-				$m = isset($items[$k]) ? $items[$k] : null;
-				if ($m === null) {
-					$stale = true;
-				} elseif ($force) {
-					$stale = true;
-				} elseif (isset($m['s']) && $m['s'] === 'err') {
-					$stale = $now - (int) $m['t'] > 3600;
-				} else {
-					$stale = $now - (int) $m['t'] > $ttl;
-				}
-				if ($stale) {
-					$queue[] = array($k, $a['doi'], $m === null ? 0 : (int) $m['t']);
-				}
-			}
-			// Never-checked first, then the oldest.
-			usort($queue, function ($x, $y) {
-				return $x[2] - $y[2];
-			});
+			$store['items'] = array_intersect_key($store['items'], $keep);
 
 			$done = 0;
 			$errors = 0;
-			$streak = 0;
+			$remaining = 0;
 			$stop = null;
-			$apiUrl = rtrim($this->settings['apiUrl'] ?: self::DEFAULT_API, '/') . '/';
-			foreach ($queue as $entry) {
-				if ($done >= $limit || microtime(true) >= $deadline) {
-					break;
-				}
-				list($k, $doi) = $entry;
-				$path = implode('/', array_map('rawurlencode', explode('/', $doi)));
-				list($code, $body) = $this->httpGet($apiUrl . $path);
-				$done++;
-				$decoded = $code === 200 ? json_decode($body, true) : null;
-				if ($code === 200 && is_array($decoded)) {
-					$items[$k] = array(
-						'c' => (int) (isset($decoded['times_cited']) ? $decoded['times_cited'] : 0),
-						'r' => (int) (isset($decoded['recent_citations']) ? $decoded['recent_citations'] : 0),
-						'f' => isset($decoded['field_citation_ratio']) ? (float) $decoded['field_citation_ratio'] : null,
-						's' => 'ok',
-						't' => time(),
-					);
-					if (!empty($decoded['license'])) {
-						$store['license'] = (string) $decoded['license'];
+			$waiting = array();
+			foreach ($this->sources() as $source) {
+				$backoffKey = $source === 'openalex' ? 'oaBackoffUntil' : 'backoffUntil';
+				$queue = $this->staleQueue($articles, $store['items'], $source, $force);
+				if (!$force && !empty($store[$backoffKey]) && $store[$backoffKey] > time()) {
+					// Rate limited earlier: leave this source for later, keep going with the others.
+					if ($queue || $this->countChecked($articles, $store['items'], $source) < count($articles)) {
+						$waiting[$source] = (int) $store[$backoffKey];
 					}
-					$streak = 0;
-				} elseif ($code === 404) {
-					// Not indexed by Dimensions (yet).
-					$items[$k] = array('c' => 0, 'r' => 0, 'f' => null, 's' => 'nf', 't' => time());
-					$streak = 0;
+					continue;
+				}
+				if (microtime(true) >= $deadline) {
+					$remaining += count($queue);
+					continue;
+				}
+				$r = $source === 'openalex'
+					? $this->refreshOpenAlex($queue, $store, $limit, $deadline)
+					: $this->refreshDimensions($queue, $store, $limit, $deadline);
+				$done += $r['done'];
+				$errors += $r['errors'];
+				if ($r['stop'] === 'rateLimited') {
+					$waiting[$source] = (int) $store[$backoffKey];
 				} else {
-					$errors++;
-					$streak++;
-					if (!isset($items[$k])) {
-						$items[$k] = array('c' => 0, 'r' => 0, 'f' => null, 's' => 'err', 't' => time());
-					} else {
-						// Keep the old numbers, retry in about an hour.
-						$items[$k]['t'] = time() - $ttl + 3600;
-					}
-					if ($code === 429) {
-						$store['backoffUntil'] = time() + 900;
-						$stop = 'rateLimited';
-						break;
-					}
-					if ($streak >= 5) {
-						$stop = 'failing';
-						break;
-					}
+					$remaining += max(0, count($queue) - $r['done']);
 				}
-				if ($done % 20 === 0) {
-					$store['items'] = $items;
-					$this->writeStore($store);
-				}
-				$delay = (int) $this->settings['requestDelayMs'];
-				if ($delay > 0) {
-					usleep($delay * 1000);
+				if ($r['stop'] === 'failing') {
+					$stop = 'failing';
 				}
 			}
 
-			$store['items'] = $items;
 			if ($done > 0) {
 				$store['updatedAt'] = time();
 			}
 			$this->writeStore($store);
 
-			$remaining = max(0, count($queue) - $done);
-			$status = $stop !== null ? 'error' : ($remaining > 0 ? 'partial' : 'ok');
-			return $this->report($status, $articles, $items, $done, $errors, array('remaining' => $remaining, 'reason' => $stop));
+			if ($stop !== null) {
+				$status = 'error';
+			} elseif ($remaining > 0) {
+				$status = 'partial';
+			} elseif ($waiting) {
+				$status = 'backoff';
+			} else {
+				$status = 'ok';
+			}
+			$extra = array('remaining' => $remaining, 'reason' => $stop);
+			if ($waiting) {
+				$extra['until'] = min($waiting);
+				$extra['waiting'] = array_keys($waiting);
+			}
+			return $this->report($status, $articles, $store['items'], $done, $errors, $extra);
 		} finally {
 			flock($lock, LOCK_UN);
 			fclose($lock);
 		}
 	}
 
-	protected function report($status, array $articles, array $items, $done, $errors, array $extra = array()) {
-		$checked = 0;
-		foreach ($items as $it) {
-			if (isset($it['s']) && ($it['s'] === 'ok' || $it['s'] === 'nf')) {
-				$checked++;
+	/**
+	 * DOIs this source should look up: never checked first, then the oldest.
+	 * @return array List of [key, doi]
+	 */
+	protected function staleQueue(array $articles, array $items, $source, $force) {
+		$k = self::keys($source);
+		$now = time();
+		$ttl = (int) $this->settings['ttlDays'] * 86400;
+		$queue = array();
+		foreach ($articles as $a) {
+			$key = strtolower($a['doi']);
+			$m = isset($items[$key]) ? $items[$key] : null;
+			$t = $m && isset($m[$k['t']]) ? (int) $m[$k['t']] : 0;
+			if ($force || !$m || !isset($m[$k['s']])) {
+				$stale = true;
+			} elseif ($m[$k['s']] === 'err') {
+				$stale = $now - $t > 3600;
+			} else {
+				$stale = $now - $t > $ttl;
+			}
+			if ($stale) {
+				$queue[] = array($key, $a['doi'], $t);
 			}
 		}
+		usort($queue, function ($x, $y) {
+			return $x[2] - $y[2];
+		});
+		return $queue;
+	}
+
+	/**
+	 * Record a failed lookup without losing earlier numbers.
+	 */
+	protected function markError(array &$items, $key, $source) {
+		$k = self::keys($source);
+		$ttl = (int) $this->settings['ttlDays'] * 86400;
+		if (!isset($items[$key][$k['s']])) {
+			$items[$key][$k['c']] = 0;
+			$items[$key][$k['r']] = 0;
+			$items[$key][$k['s']] = 'err';
+			$items[$key][$k['t']] = time();
+		} else {
+			// Keep the old numbers, retry in about an hour.
+			$items[$key][$k['t']] = time() - $ttl + 3600;
+		}
+	}
+
+	/**
+	 * Dimensions Metrics API, one DOI per request.
+	 * @return array {done, errors, stop}
+	 */
+	protected function refreshDimensions(array $queue, array &$store, $limit, $deadline) {
+		$done = 0;
+		$errors = 0;
+		$streak = 0;
+		$stop = null;
+		$apiUrl = rtrim($this->settings['apiUrl'] ?: self::DEFAULT_API, '/') . '/';
+		foreach ($queue as $entry) {
+			if ($done >= $limit || microtime(true) >= $deadline) {
+				break;
+			}
+			list($k, $doi) = $entry;
+			$path = implode('/', array_map('rawurlencode', explode('/', $doi)));
+			list($code, $body) = $this->httpGet($apiUrl . $path);
+			$done++;
+			$decoded = $code === 200 ? json_decode($body, true) : null;
+			if ($code === 200 && is_array($decoded)) {
+				$store['items'][$k] = array_merge(isset($store['items'][$k]) ? $store['items'][$k] : array(), array(
+					'c' => (int) (isset($decoded['times_cited']) ? $decoded['times_cited'] : 0),
+					'r' => (int) (isset($decoded['recent_citations']) ? $decoded['recent_citations'] : 0),
+					'f' => isset($decoded['field_citation_ratio']) ? (float) $decoded['field_citation_ratio'] : null,
+					's' => 'ok',
+					't' => time(),
+				));
+				if (!empty($decoded['license'])) {
+					$store['license'] = (string) $decoded['license'];
+				}
+				$streak = 0;
+			} elseif ($code === 404) {
+				// Not indexed by Dimensions (yet).
+				$store['items'][$k] = array_merge(isset($store['items'][$k]) ? $store['items'][$k] : array(),
+					array('c' => 0, 'r' => 0, 'f' => null, 's' => 'nf', 't' => time()));
+				$streak = 0;
+			} else {
+				$errors++;
+				$streak++;
+				$this->markError($store['items'], $k, 'dimensions');
+				if ($code === 429) {
+					$store['backoffUntil'] = time() + 900;
+					$stop = 'rateLimited';
+					break;
+				}
+				if ($streak >= 5) {
+					$stop = 'failing';
+					break;
+				}
+			}
+			if ($done % 20 === 0) {
+				$this->writeStore($store);
+			}
+			$delay = (int) $this->settings['requestDelayMs'];
+			if ($delay > 0) {
+				usleep($delay * 1000);
+			}
+		}
+		return array('done' => $done, 'errors' => $errors, 'stop' => $stop);
+	}
+
+	/**
+	 * OpenAlex, up to 50 DOIs per request (one OR filter). Without an API key
+	 * OpenAlex gives a small free daily budget per IP address, shared with
+	 * other sites on the same server; a free key gives the journal its own.
+	 * @return array {done, errors, stop}
+	 */
+	protected function refreshOpenAlex(array $queue, array &$store, $limit, $deadline) {
+		$done = 0;
+		$errors = 0;
+		$streak = 0;
+		$stop = null;
+		$year = (int) date('Y');
+		// DOIs with "," or "|" would break the OR filter; they are rare and looked up one by one.
+		$batches = array();
+		$batch = array();
+		foreach (array_slice($queue, 0, $limit) as $entry) {
+			if (strpbrk($entry[1], ',|') !== false) {
+				$batches[] = array($entry);
+				continue;
+			}
+			$batch[] = $entry;
+			if (count($batch) === 50) {
+				$batches[] = $batch;
+				$batch = array();
+			}
+		}
+		if ($batch) {
+			$batches[] = $batch;
+		}
+
+		foreach ($batches as $batch) {
+			if (microtime(true) >= $deadline) {
+				break;
+			}
+			$params = array('select' => 'id,doi,cited_by_count,counts_by_year', 'per-page' => 100);
+			if (count($batch) === 1 && strpbrk($batch[0][1], ',|') !== false) {
+				$url = self::OPENALEX_API . '/works/' . rawurlencode('https://doi.org/' . $batch[0][1]);
+				unset($params['per-page']);
+			} else {
+				$url = self::OPENALEX_API . '/works';
+				$params['filter'] = 'doi:' . implode('|', array_map(function ($e) { return $e[1]; }, $batch));
+			}
+			if ($this->settings['openAlexKey'] !== '') {
+				$params['api_key'] = $this->settings['openAlexKey'];
+			} elseif ($this->settings['contactEmail'] !== '') {
+				$params['mailto'] = $this->settings['contactEmail'];
+			}
+			list($code, $body, $headers) = $this->httpGet($url . '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986));
+			$done += count($batch);
+			$decoded = $code === 200 ? json_decode($body, true) : null;
+			if ($code === 200 && is_array($decoded)) {
+				$results = isset($decoded['results']) ? $decoded['results'] : array($decoded);
+				$found = array();
+				foreach ($results as $w) {
+					$doi = isset($w['doi']) ? self::normalizeDoi($w['doi']) : null;
+					if ($doi === null) {
+						continue;
+					}
+					$recent = 0;
+					foreach (isset($w['counts_by_year']) ? $w['counts_by_year'] : array() as $y) {
+						if ((int) $y['year'] >= $year - 1) {
+							$recent += (int) $y['cited_by_count'];
+						}
+					}
+					$found[strtolower($doi)] = array(
+						'oc' => (int) (isset($w['cited_by_count']) ? $w['cited_by_count'] : 0),
+						'or' => $recent,
+						'oid' => isset($w['id']) ? preg_replace('~^https?://openalex\.org/~', '', (string) $w['id']) : null,
+						'os' => 'ok',
+						'ot' => time(),
+					);
+				}
+				foreach ($batch as $entry) {
+					$k = $entry[0];
+					$values = isset($found[$k]) ? $found[$k] : array('oc' => 0, 'or' => 0, 'oid' => null, 'os' => 'nf', 'ot' => time());
+					$store['items'][$k] = array_merge(isset($store['items'][$k]) ? $store['items'][$k] : array(), $values);
+				}
+				$streak = 0;
+			} elseif ($code === 404 && count($batch) === 1) {
+				$k = $batch[0][0];
+				$store['items'][$k] = array_merge(isset($store['items'][$k]) ? $store['items'][$k] : array(),
+					array('oc' => 0, 'or' => 0, 'oid' => null, 'os' => 'nf', 'ot' => time()));
+			} else {
+				$errors++;
+				$streak++;
+				foreach ($batch as $entry) {
+					$this->markError($store['items'], $entry[0], 'openalex');
+				}
+				if ($code === 429 || $code === 402) {
+					// Daily budget used up: wait until OpenAlex resets it (at most a day).
+					$reset = isset($headers['x-ratelimit-reset']) ? (int) $headers['x-ratelimit-reset'] : 3600;
+					$store['oaBackoffUntil'] = time() + max(900, min(86400, $reset));
+					$stop = 'rateLimited';
+					break;
+				}
+				if ($streak >= 3) {
+					$stop = 'failing';
+					break;
+				}
+			}
+			$this->writeStore($store);
+		}
+		return array('done' => $done, 'errors' => $errors, 'stop' => $stop);
+	}
+
+	protected function report($status, array $articles, array $items, $done, $errors, array $extra = array()) {
 		return array_merge(array(
 			'status' => $status,
 			'articles' => count($articles),
-			'checked' => $checked,
+			'checked' => $this->countChecked($articles, $items),
 			'processed' => $done,
 			'errors' => $errors,
 		), $extra);
 	}
 
 	/**
+	 * @return int Articles that every enabled source (or only $only) has answered for.
+	 */
+	protected function countChecked(array $articles, array $items, $only = null) {
+		$checked = 0;
+		foreach ($articles as $a) {
+			$m = isset($items[strtolower($a['doi'])]) ? $items[strtolower($a['doi'])] : null;
+			$all = true;
+			foreach ($only === null ? $this->sources() : array($only) as $source) {
+				$all = $all && self::checkedBy($m, $source);
+			}
+			$checked += $all ? 1 : 0;
+		}
+		return $checked;
+	}
+
+	/**
 	 * @param string $url
-	 * @return array [int status code (0 on network error), string body]
+	 * @return array [int status code (0 on network error), string body, array lower-case headers]
 	 */
 	protected function httpGet($url) {
-		$ua = 'OJS-CitationImpact/2.0' . ($this->settings['contactEmail'] ? ' (mailto:' . $this->settings['contactEmail'] . ')' : '');
+		$ua = 'OJS-CitationImpact/2.2' . ($this->settings['contactEmail'] ? ' (mailto:' . $this->settings['contactEmail'] . ')' : '');
 		try {
 			$client = Application::get()->getHttpClient();
 			$response = $client->request('GET', $url, array(
@@ -456,10 +710,14 @@ class CitationImpactService {
 				'connect_timeout' => 10,
 				'headers' => array('User-Agent' => $ua, 'Accept' => 'application/json'),
 			));
-			return array((int) $response->getStatusCode(), (string) $response->getBody());
+			$headers = array();
+			foreach ($response->getHeaders() as $name => $values) {
+				$headers[strtolower($name)] = implode(', ', $values);
+			}
+			return array((int) $response->getStatusCode(), (string) $response->getBody(), $headers);
 		} catch (\Throwable $e) {
 			error_log('Citation Impact: ' . $e->getMessage());
-			return array(0, '');
+			return array(0, '', array());
 		}
 	}
 
@@ -472,7 +730,7 @@ class CitationImpactService {
 	 * @param string $locale
 	 * @return array
 	 */
-	public function build($locale) {
+	public function build($locale, $allRows = false) {
 		$articles = $this->getArticles();
 		$store = $this->readStore();
 		$items = $store['items'];
@@ -489,8 +747,8 @@ class CitationImpactService {
 		$winCited = 0;
 		$winList = array();
 		foreach ($articles as $a) {
-			$m = isset($items[strtolower($a['doi'])]) ? $items[strtolower($a['doi'])] : null;
-			$ok = $m && isset($m['s']) && ($m['s'] === 'ok' || $m['s'] === 'nf');
+			$m = $this->merge(isset($items[strtolower($a['doi'])]) ? $items[strtolower($a['doi'])] : null);
+			$ok = $m['ok'];
 			$c = $ok ? (int) $m['c'] : null;
 			if ($ok) {
 				$checked++;
@@ -519,6 +777,10 @@ class CitationImpactService {
 				'cites' => $c,
 				'recent' => $ok ? (int) $m['r'] : null,
 				'fcr' => $ok ? $m['f'] : null,
+				'citesDimensions' => $m['cd'],
+				'citesOpenAlex' => $m['co'],
+				'openAlexId' => $m['oid'],
+				'inWindow' => $year >= $winFrom && $year <= $winTo,
 			));
 		}
 
@@ -557,7 +819,7 @@ class CitationImpactService {
 			}
 		}
 
-		if ($this->settings['listMode'] !== 'all') {
+		if (!$allRows && $this->settings['listMode'] !== 'all') {
 			$rows = array_values(array_filter($rows, function ($r) {
 				return $r['cites'] > 0;
 			}));
@@ -607,6 +869,8 @@ class CitationImpactService {
 			'updatedAt' => isset($store['updatedAt']) ? (int) $store['updatedAt'] : null,
 			'license' => isset($store['license']) ? $store['license'] : null,
 			'withoutDoi' => $this->countWithoutDoi(),
+			'sources' => $this->sources(),
+			'pending' => $this->countChecked($articles, $items) < count($articles),
 		);
 	}
 
@@ -617,19 +881,10 @@ class CitationImpactService {
 	public function status() {
 		$articles = $this->getArticles();
 		$store = $this->readStore();
-		$checked = 0;
-		$keep = array();
-		foreach ($articles as $a) {
-			$keep[strtolower($a['doi'])] = true;
-		}
-		foreach (array_intersect_key($store['items'], $keep) as $it) {
-			if (isset($it['s']) && ($it['s'] === 'ok' || $it['s'] === 'nf')) {
-				$checked++;
-			}
-		}
 		return array(
 			'articles' => count($articles),
-			'checked' => $checked,
+			'checked' => $this->countChecked($articles, $store['items']),
+			'oaWaitUntil' => !empty($store['oaBackoffUntil']) && $store['oaBackoffUntil'] > time() ? (int) $store['oaBackoffUntil'] : null,
 			'withoutDoi' => $this->countWithoutDoi(),
 			'updatedAt' => isset($store['updatedAt']) ? (int) $store['updatedAt'] : null,
 		);
