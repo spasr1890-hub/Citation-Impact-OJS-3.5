@@ -1,0 +1,305 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: id\n"
+
+msgid "plugins.generic.citationImpact.displayName"
+msgstr "Citation Impact (Dimensions)"
+
+msgid "plugins.generic.citationImpact.description"
+msgstr "Menambahkan halaman dampak sitasi ke jurnal, berisi jumlah sitasi dari Dimensions untuk setiap artikel terbit yang memiliki DOI."
+
+msgid "plugins.generic.citationImpact.pageTitle"
+msgstr "Dampak & Sitasi"
+
+msgid "plugins.generic.citationImpact.lead"
+msgstr "Jumlah sitasi artikel {$journal} menurut Dimensions."
+
+msgid "plugins.generic.citationImpact.updated"
+msgstr "Diperbarui {$date}"
+
+msgid "plugins.generic.citationImpact.coverage"
+msgstr "{$checked} dari {$total} artikel sudah dicek"
+
+msgid "plugins.generic.citationImpact.empty"
+msgstr "Data sitasi belum tersedia. Data akan muncul setelah pembaruan pertama."
+
+msgid "plugins.generic.citationImpact.summary"
+msgstr "Ringkasan"
+
+msgid "plugins.generic.citationImpact.stat.total"
+msgstr "Total sitasi"
+
+msgid "plugins.generic.citationImpact.stat.recent"
+msgstr "Sitasi 2 tahun terakhir"
+
+msgid "plugins.generic.citationImpact.byYear"
+msgstr "Sitasi menurut tahun terbit"
+
+msgid "plugins.generic.citationImpact.byYear.note"
+msgstr "Jumlah sitasi yang diterima artikel, dikelompokkan menurut tahun artikel itu terbit."
+
+msgid "plugins.generic.citationImpact.asTable"
+msgstr "Lihat sebagai tabel"
+
+msgid "plugins.generic.citationImpact.chart.citations"
+msgstr "sitasi"
+
+msgid "plugins.generic.citationImpact.chart.articles"
+msgstr "artikel"
+
+msgid "plugins.generic.citationImpact.chart.citationsTitle"
+msgstr "Sitasi"
+
+msgid "plugins.generic.citationImpact.chart.articlesTitle"
+msgstr "Artikel"
+
+msgid "plugins.generic.citationImpact.list.cited"
+msgstr "Artikel paling banyak disitasi"
+
+msgid "plugins.generic.citationImpact.list.all"
+msgstr "Semua artikel"
+
+msgid "plugins.generic.citationImpact.list.onlyCited"
+msgstr "Hanya artikel yang sudah disitasi yang ditampilkan."
+
+msgid "plugins.generic.citationImpact.fcrHelp"
+msgstr "FCR = Field Citation Ratio; 1,0 = rata-rata bidangnya."
+
+msgid "plugins.generic.citationImpact.search"
+msgstr "Cari judul, penulis, atau DOI"
+
+msgid "plugins.generic.citationImpact.sort"
+msgstr "Urutkan"
+
+msgid "plugins.generic.citationImpact.sort.cites"
+msgstr "Sitasi terbanyak"
+
+msgid "plugins.generic.citationImpact.sort.recent"
+msgstr "Sitasi 2 tahun terakhir"
+
+msgid "plugins.generic.citationImpact.sort.newest"
+msgstr "Terbaru"
+
+msgid "plugins.generic.citationImpact.col.article"
+msgstr "Artikel"
+
+msgid "plugins.generic.citationImpact.col.year"
+msgstr "Tahun"
+
+msgid "plugins.generic.citationImpact.col.cites"
+msgstr "Sitasi"
+
+msgid "plugins.generic.citationImpact.col.recent"
+msgstr "2 th"
+
+msgid "plugins.generic.citationImpact.dimensionsDetails"
+msgstr "Detail di Dimensions"
+
+msgid "plugins.generic.citationImpact.etAl"
+msgstr "dkk."
+
+msgid "plugins.generic.citationImpact.noMatch"
+msgstr "Tidak ada artikel yang cocok."
+
+msgid "plugins.generic.citationImpact.more"
+msgstr "Tampilkan lebih banyak"
+
+msgid "plugins.generic.citationImpact.shown"
+msgstr "Menampilkan {$shown} dari {$total}"
+
+msgid "plugins.generic.citationImpact.source"
+msgstr "Sumber data sitasi: <a href=\"https://www.dimensions.ai/\" target=\"_blank\" rel=\"noopener\">Dimensions</a>. Angka bisa berbeda dari Google Scholar, Scopus, atau Crossref karena cakupan basis datanya berbeda."
+
+msgid "plugins.generic.citationImpact.pending"
+msgstr "Sebagian artikel belum dicek; angka akan bertambah setelah pembaruan berikutnya."
+
+msgid "plugins.generic.citationImpact.withoutDoi"
+msgstr "{$count} artikel terbit tanpa DOI tidak ikut dihitung."
+
+msgid "plugins.generic.citationImpact.menuItem.title"
+msgstr "Dampak & Sitasi"
+
+msgid "plugins.generic.citationImpact.menuItem.description"
+msgstr "Tautan ke halaman Dampak & Sitasi (data sitasi dari Dimensions)."
+
+msgid "plugins.generic.citationImpact.settings.description"
+msgstr "Jumlah sitasi diambil dari Dimensions Metrics API (gratis) untuk setiap artikel terbit yang memiliki DOI. Data diperbarui otomatis setiap jam dalam kelompok kecil. Data Dimensions gratis untuk penggunaan non-komersial; pengelola situs jurnal diminta menghubungi publishing@digital-science.com."
+
+msgid "plugins.generic.citationImpact.settings.pagePath"
+msgstr "Alamat halaman"
+
+msgid "plugins.generic.citationImpact.settings.pagePath.description"
+msgstr "Halaman tampil di /index.php/jurnal/alamat. Hanya huruf kecil, angka, - dan _."
+
+msgid "plugins.generic.citationImpact.settings.pagePath.invalid"
+msgstr "Gunakan huruf kecil, angka, - dan _ saja."
+
+msgid "plugins.generic.citationImpact.settings.listMode"
+msgstr "Daftar artikel"
+
+msgid "plugins.generic.citationImpact.settings.listMode.cited"
+msgstr "Hanya artikel yang sudah disitasi"
+
+msgid "plugins.generic.citationImpact.settings.listMode.all"
+msgstr "Semua artikel"
+
+msgid "plugins.generic.citationImpact.settings.ttlDays"
+msgstr "Cek ulang setiap artikel tiap (hari)"
+
+msgid "plugins.generic.citationImpact.settings.ttlDays.description"
+msgstr "Antara 1 dan 90. Nilai bawaan 7 sudah cukup ringan bagi layanan Dimensions."
+
+msgid "plugins.generic.citationImpact.settings.ttlDays.invalid"
+msgstr "Isi bilangan bulat antara 1 dan 90."
+
+msgid "plugins.generic.citationImpact.settings.contactEmail"
+msgstr "Email kontak"
+
+msgid "plugins.generic.citationImpact.settings.contactEmail.description"
+msgstr "Dikirim ke Dimensions bersama setiap permintaan agar mereka bisa menghubungi jurnal."
+
+msgid "plugins.generic.citationImpact.settings.contactEmail.invalid"
+msgstr "Masukkan alamat email yang valid."
+
+msgid "plugins.generic.citationImpact.status.title"
+msgstr "Status"
+
+msgid "plugins.generic.citationImpact.status.checkedOf"
+msgstr "dari {$total} artikel ber-DOI sudah dicek"
+
+msgid "plugins.generic.citationImpact.status.updated"
+msgstr "Pembaruan terakhir: {$date}"
+
+msgid "plugins.generic.citationImpact.status.never"
+msgstr "Belum pernah diperbarui."
+
+msgid "plugins.generic.citationImpact.status.withoutDoi"
+msgstr "{$count} artikel tanpa DOI"
+
+msgid "plugins.generic.citationImpact.status.viewPage"
+msgstr "Lihat halaman"
+
+msgid "plugins.generic.citationImpact.refresh.button"
+msgstr "Perbarui sekarang"
+
+msgid "plugins.generic.citationImpact.refresh.running"
+msgstr "Mengambil sitasi… sisa {$remaining} artikel. Biarkan jendela ini terbuka."
+
+msgid "plugins.generic.citationImpact.refresh.done"
+msgstr "Selesai. Semua data sudah terbaru."
+
+msgid "plugins.generic.citationImpact.refresh.busy"
+msgstr "Pembaruan lain sedang berjalan, menunggu…"
+
+msgid "plugins.generic.citationImpact.refresh.backoff"
+msgstr "Dimensions meminta jeda. Pembaruan otomatis dilanjutkan 15 menit lagi."
+
+msgid "plugins.generic.citationImpact.refresh.error"
+msgstr "Server tidak dapat dihubungi. Mencoba lagi dalam 10 detik…"
+
+msgid "plugins.generic.citationImpact.refresh.stopped"
+msgstr "Berhenti karena Dimensions berulang kali gagal merespons. Coba lagi nanti."
+
+msgid "plugins.generic.citationImpact.refresh.help"
+msgstr "Hanya perlu untuk pengisian pertama atau setelah perubahan besar; setelah itu plugin memperbarui datanya sendiri setiap jam."
+
+msgid "plugins.generic.citationImpact.status.justNow"
+msgstr "Pembaruan terakhir: baru saja"
+
+msgid "plugins.generic.citationImpact.status.error"
+msgstr "Plugin tidak dapat membaca daftar artikel. Kirimkan pesan berikut ke pengelola plugin:"
+
+msgid "plugins.generic.citationImpact.filter.years"
+msgstr "Tahun terbit"
+
+msgid "plugins.generic.citationImpact.filter.allYears"
+msgstr "Semua tahun"
+
+msgid "plugins.generic.citationImpact.filter.window"
+msgstr "3 tahun terakhir ({$from}–{$to})"
+
+msgid "plugins.generic.citationImpact.settings.window"
+msgstr "Rentang \"3 tahun terakhir\""
+
+msgid "plugins.generic.citationImpact.settings.window.current"
+msgstr "{$from}–{$to}: tahun berjalan dan dua tahun sebelumnya"
+
+msgid "plugins.generic.citationImpact.settings.window.full"
+msgstr "{$from}–{$to}: tiga tahun penuh sebelumnya"
+
+msgid "plugins.generic.citationImpact.settings.window.description"
+msgstr "Tahun terbit yang dijumlahkan untuk sitasi \"3 tahun terakhir\" (butir Dampak Ilmiah ARJUNA). Sesuaikan dengan rentang yang dipakai asesor."
+
+msgid "plugins.generic.citationImpact.sourceChip"
+msgstr "Data: Dimensions"
+
+msgid "plugins.generic.citationImpact.stat.recentLine"
+msgstr "{$count} di antaranya dalam 2 tahun terakhir"
+
+msgid "plugins.generic.citationImpact.stat.citedLine"
+msgstr "{$cited} dari {$total} artikel sudah disitasi"
+
+msgid "plugins.generic.citationImpact.stat.citedNote"
+msgstr "Persentase artikel yang punya minimal satu sitasi"
+
+msgid "plugins.generic.citationImpact.index.title"
+msgstr "Indeks sitasi"
+
+msgid "plugins.generic.citationImpact.index.metric"
+msgstr "Indikator"
+
+msgid "plugins.generic.citationImpact.index.all"
+msgstr "Semua"
+
+msgid "plugins.generic.citationImpact.index.last3"
+msgstr "3 tahun terakhir"
+
+msgid "plugins.generic.citationImpact.index.citations"
+msgstr "Sitasi"
+
+msgid "plugins.generic.citationImpact.index.articles"
+msgstr "Artikel"
+
+msgid "plugins.generic.citationImpact.index.cited"
+msgstr "Artikel tersitasi"
+
+msgid "plugins.generic.citationImpact.index.note"
+msgstr "Kolom {$from}–{$to} menghitung artikel yang terbit dalam 3 tahun terakhir, rentang yang dipakai butir Dampak Ilmiah akreditasi ARJUNA."
+
+msgid "plugins.generic.citationImpact.charts"
+msgstr "Grafik"
+
+msgid "plugins.generic.citationImpact.dist"
+msgstr "Sebaran sitasi"
+
+msgid "plugins.generic.citationImpact.dist.note"
+msgstr "Jumlah artikel (dari {$total} yang sudah dicek) menurut rentang jumlah sitasinya."
+
+msgid "plugins.generic.citationImpact.dist.band"
+msgstr "{$band} sitasi"
+
+msgid "plugins.generic.citationImpact.legend.ramp"
+msgstr "Batang makin gelap = tahun terbit makin baru ({$from} → {$to})"
+
+msgid "plugins.generic.citationImpact.legend.band"
+msgstr "Area biru: 3 tahun terakhir ({$from}–{$to}), {$articles} artikel, {$citations} sitasi"
+
+msgid "plugins.generic.citationImpact.chart.window"
+msgstr "3 TAHUN TERAKHIR"
+
+msgid "plugins.generic.citationImpact.top.title"
+msgstr "Artikel paling berpengaruh"
+
+msgid "plugins.generic.citationImpact.fcrTimes"
+msgstr "{$n}× rata-rata bidang"
+
+msgid "plugins.generic.citationImpact.stat.mean"
+msgstr "Rata-rata per artikel"
+
+msgid "plugins.generic.citationImpact.stat.max"
+msgstr "Tertinggi (1 artikel)"
+

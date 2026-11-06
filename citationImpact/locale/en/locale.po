@@ -1,0 +1,305 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgid "plugins.generic.citationImpact.displayName"
+msgstr "Citation Impact (Dimensions)"
+
+msgid "plugins.generic.citationImpact.description"
+msgstr "Adds a public citation impact page to the journal, with citation counts from Dimensions for every published article with a DOI."
+
+msgid "plugins.generic.citationImpact.pageTitle"
+msgstr "Citation Impact"
+
+msgid "plugins.generic.citationImpact.lead"
+msgstr "Citations to articles in {$journal}, according to Dimensions."
+
+msgid "plugins.generic.citationImpact.updated"
+msgstr "Updated {$date}"
+
+msgid "plugins.generic.citationImpact.coverage"
+msgstr "{$checked} of {$total} articles checked"
+
+msgid "plugins.generic.citationImpact.empty"
+msgstr "Citation data is not available yet. It will appear after the first update."
+
+msgid "plugins.generic.citationImpact.summary"
+msgstr "Summary"
+
+msgid "plugins.generic.citationImpact.stat.total"
+msgstr "Total citations"
+
+msgid "plugins.generic.citationImpact.stat.recent"
+msgstr "Citations, last 2 years"
+
+msgid "plugins.generic.citationImpact.byYear"
+msgstr "Citations by publication year"
+
+msgid "plugins.generic.citationImpact.byYear.note"
+msgstr "Citations received by articles, grouped by the year each article was published."
+
+msgid "plugins.generic.citationImpact.asTable"
+msgstr "View as table"
+
+msgid "plugins.generic.citationImpact.chart.citations"
+msgstr "citations"
+
+msgid "plugins.generic.citationImpact.chart.articles"
+msgstr "articles"
+
+msgid "plugins.generic.citationImpact.chart.citationsTitle"
+msgstr "Citations"
+
+msgid "plugins.generic.citationImpact.chart.articlesTitle"
+msgstr "Articles"
+
+msgid "plugins.generic.citationImpact.list.cited"
+msgstr "Most cited articles"
+
+msgid "plugins.generic.citationImpact.list.all"
+msgstr "All articles"
+
+msgid "plugins.generic.citationImpact.list.onlyCited"
+msgstr "Only articles with at least one citation are listed."
+
+msgid "plugins.generic.citationImpact.fcrHelp"
+msgstr "FCR = Field Citation Ratio; 1.0 is the field average."
+
+msgid "plugins.generic.citationImpact.search"
+msgstr "Search title, author or DOI"
+
+msgid "plugins.generic.citationImpact.sort"
+msgstr "Sort"
+
+msgid "plugins.generic.citationImpact.sort.cites"
+msgstr "Most cited"
+
+msgid "plugins.generic.citationImpact.sort.recent"
+msgstr "Citations, last 2 years"
+
+msgid "plugins.generic.citationImpact.sort.newest"
+msgstr "Newest"
+
+msgid "plugins.generic.citationImpact.col.article"
+msgstr "Article"
+
+msgid "plugins.generic.citationImpact.col.year"
+msgstr "Year"
+
+msgid "plugins.generic.citationImpact.col.cites"
+msgstr "Citations"
+
+msgid "plugins.generic.citationImpact.col.recent"
+msgstr "2 yr"
+
+msgid "plugins.generic.citationImpact.dimensionsDetails"
+msgstr "Details on Dimensions"
+
+msgid "plugins.generic.citationImpact.etAl"
+msgstr "et al."
+
+msgid "plugins.generic.citationImpact.noMatch"
+msgstr "No matching articles."
+
+msgid "plugins.generic.citationImpact.more"
+msgstr "Show more"
+
+msgid "plugins.generic.citationImpact.shown"
+msgstr "Showing {$shown} of {$total}"
+
+msgid "plugins.generic.citationImpact.source"
+msgstr "Citation data: <a href=\"https://www.dimensions.ai/\" target=\"_blank\" rel=\"noopener\">Dimensions</a>. Counts may differ from Google Scholar, Scopus or Crossref because their coverage differs."
+
+msgid "plugins.generic.citationImpact.pending"
+msgstr "Some articles have not been checked yet; numbers will grow after the next update."
+
+msgid "plugins.generic.citationImpact.withoutDoi"
+msgstr "{$count} published articles without a DOI are not counted."
+
+msgid "plugins.generic.citationImpact.menuItem.title"
+msgstr "Citation Impact"
+
+msgid "plugins.generic.citationImpact.menuItem.description"
+msgstr "Link to the Citation Impact page (citations from Dimensions)."
+
+msgid "plugins.generic.citationImpact.settings.description"
+msgstr "Citation counts are taken from the free Dimensions Metrics API for every published article with a DOI. Data is refreshed automatically every hour in small batches. Dimensions data is free for non-commercial use; journal sites should contact publishing@digital-science.com."
+
+msgid "plugins.generic.citationImpact.settings.pagePath"
+msgstr "Page path"
+
+msgid "plugins.generic.citationImpact.settings.pagePath.description"
+msgstr "The page is shown at /index.php/journal/path. Lowercase letters, numbers, - and _ only."
+
+msgid "plugins.generic.citationImpact.settings.pagePath.invalid"
+msgstr "Use lowercase letters, numbers, - and _ only."
+
+msgid "plugins.generic.citationImpact.settings.listMode"
+msgstr "Article list"
+
+msgid "plugins.generic.citationImpact.settings.listMode.cited"
+msgstr "Only cited articles"
+
+msgid "plugins.generic.citationImpact.settings.listMode.all"
+msgstr "All articles"
+
+msgid "plugins.generic.citationImpact.settings.ttlDays"
+msgstr "Re-check each article every (days)"
+
+msgid "plugins.generic.citationImpact.settings.ttlDays.description"
+msgstr "Between 1 and 90. The default of 7 is gentle on the Dimensions service."
+
+msgid "plugins.generic.citationImpact.settings.ttlDays.invalid"
+msgstr "Enter a whole number between 1 and 90."
+
+msgid "plugins.generic.citationImpact.settings.contactEmail"
+msgstr "Contact email"
+
+msgid "plugins.generic.citationImpact.settings.contactEmail.description"
+msgstr "Sent to Dimensions with each request so they can contact the journal."
+
+msgid "plugins.generic.citationImpact.settings.contactEmail.invalid"
+msgstr "Enter a valid email address."
+
+msgid "plugins.generic.citationImpact.status.title"
+msgstr "Status"
+
+msgid "plugins.generic.citationImpact.status.checkedOf"
+msgstr "of {$total} articles with a DOI checked"
+
+msgid "plugins.generic.citationImpact.status.updated"
+msgstr "Last update: {$date}"
+
+msgid "plugins.generic.citationImpact.status.never"
+msgstr "Not updated yet."
+
+msgid "plugins.generic.citationImpact.status.withoutDoi"
+msgstr "{$count} articles without a DOI"
+
+msgid "plugins.generic.citationImpact.status.viewPage"
+msgstr "View page"
+
+msgid "plugins.generic.citationImpact.refresh.button"
+msgstr "Update now"
+
+msgid "plugins.generic.citationImpact.refresh.running"
+msgstr "Fetching citations… {$remaining} articles left. Keep this window open."
+
+msgid "plugins.generic.citationImpact.refresh.done"
+msgstr "Done. All data is up to date."
+
+msgid "plugins.generic.citationImpact.refresh.busy"
+msgstr "Another update is running, waiting…"
+
+msgid "plugins.generic.citationImpact.refresh.backoff"
+msgstr "Dimensions asked us to slow down. Updates resume automatically in 15 minutes."
+
+msgid "plugins.generic.citationImpact.refresh.error"
+msgstr "The server could not be reached. Retrying in 10 seconds…"
+
+msgid "plugins.generic.citationImpact.refresh.stopped"
+msgstr "Stopped after repeated errors from Dimensions. Try again later."
+
+msgid "plugins.generic.citationImpact.refresh.help"
+msgstr "Only needed for the first fill or after big changes; afterwards the plugin updates itself every hour."
+
+msgid "plugins.generic.citationImpact.status.justNow"
+msgstr "Last update: just now"
+
+msgid "plugins.generic.citationImpact.status.error"
+msgstr "The plugin could not read the article list. Please send this message to the plugin maintainer:"
+
+msgid "plugins.generic.citationImpact.filter.years"
+msgstr "Publication years"
+
+msgid "plugins.generic.citationImpact.filter.allYears"
+msgstr "All years"
+
+msgid "plugins.generic.citationImpact.filter.window"
+msgstr "Last 3 years ({$from}–{$to})"
+
+msgid "plugins.generic.citationImpact.settings.window"
+msgstr "\"Last 3 years\" window"
+
+msgid "plugins.generic.citationImpact.settings.window.current"
+msgstr "{$from}–{$to}: current year and the two before"
+
+msgid "plugins.generic.citationImpact.settings.window.full"
+msgstr "{$from}–{$to}: the three full years before"
+
+msgid "plugins.generic.citationImpact.settings.window.description"
+msgstr "Publication years summed for the \"last 3 years\" citation count (the ARJUNA scientific impact criterion). Match the window your assessor uses."
+
+msgid "plugins.generic.citationImpact.sourceChip"
+msgstr "Data: Dimensions"
+
+msgid "plugins.generic.citationImpact.stat.recentLine"
+msgstr "{$count} of them in the last 2 years"
+
+msgid "plugins.generic.citationImpact.stat.citedLine"
+msgstr "{$cited} of {$total} articles cited"
+
+msgid "plugins.generic.citationImpact.stat.citedNote"
+msgstr "Share of checked articles with at least one citation"
+
+msgid "plugins.generic.citationImpact.index.title"
+msgstr "Citation indices"
+
+msgid "plugins.generic.citationImpact.index.metric"
+msgstr "Metric"
+
+msgid "plugins.generic.citationImpact.index.all"
+msgstr "All"
+
+msgid "plugins.generic.citationImpact.index.last3"
+msgstr "last 3 years"
+
+msgid "plugins.generic.citationImpact.index.citations"
+msgstr "Citations"
+
+msgid "plugins.generic.citationImpact.index.articles"
+msgstr "Articles"
+
+msgid "plugins.generic.citationImpact.index.cited"
+msgstr "Cited articles"
+
+msgid "plugins.generic.citationImpact.index.note"
+msgstr "The {$from}–{$to} column counts articles published in the last 3 years, the window used by the ARJUNA “Dampak Ilmiah” (scientific impact) criterion."
+
+msgid "plugins.generic.citationImpact.charts"
+msgstr "Charts"
+
+msgid "plugins.generic.citationImpact.dist"
+msgstr "Citation distribution"
+
+msgid "plugins.generic.citationImpact.dist.note"
+msgstr "How many of the {$total} checked articles fall in each citation range."
+
+msgid "plugins.generic.citationImpact.dist.band"
+msgstr "{$band} citations"
+
+msgid "plugins.generic.citationImpact.legend.ramp"
+msgstr "Darker bars = more recent publication years ({$from} → {$to})"
+
+msgid "plugins.generic.citationImpact.legend.band"
+msgstr "Shaded: last 3 years ({$from}–{$to}), {$articles} articles, {$citations} citations"
+
+msgid "plugins.generic.citationImpact.chart.window"
+msgstr "LAST 3 YEARS"
+
+msgid "plugins.generic.citationImpact.top.title"
+msgstr "Most influential articles"
+
+msgid "plugins.generic.citationImpact.fcrTimes"
+msgstr "{$n}× field average"
+
+msgid "plugins.generic.citationImpact.stat.mean"
+msgstr "Mean per article"
+
+msgid "plugins.generic.citationImpact.stat.max"
+msgstr "Highest (one article)"
+
