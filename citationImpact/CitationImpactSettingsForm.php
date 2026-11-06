@@ -12,6 +12,7 @@
 namespace APP\plugins\generic\citationImpact;
 
 use APP\core\Application;
+use APP\plugins\generic\citationImpact\classes\CitationImpactPalette;
 use APP\plugins\generic\citationImpact\classes\CitationImpactService;
 use APP\template\TemplateManager;
 use PKP\form\Form;
@@ -43,6 +44,9 @@ class CitationImpactSettingsForm extends Form {
 		$this->addCheck(new FormValidatorCustom($this, 'ttlDays', 'required', 'plugins.generic.citationImpact.settings.ttlDays.invalid', function ($v) {
 			return ctype_digit((string) $v) && (int) $v >= 1 && (int) $v <= 90;
 		}));
+		$this->addCheck(new FormValidatorCustom($this, 'accentColor', 'optional', 'plugins.generic.citationImpact.settings.accentColor.invalid', function ($v) {
+			return CitationImpactPalette::normalizeHex($v) !== null;
+		}));
 		$this->addCheck(new FormValidatorPost($this));
 		$this->addCheck(new FormValidatorCSRF($this));
 	}
@@ -59,11 +63,13 @@ class CitationImpactSettingsForm extends Form {
 			'ttlDays' => $s['ttlDays'],
 			'pagePath' => $s['pagePath'],
 			'windowIncludeCurrent' => $s['windowIncludeCurrent'] ? '1' : '0',
+			'accentColor' => $s['accentColor'],
 		);
 	}
 
 	public function readInputData() {
-		$this->readUserVars(array('contactEmail', 'listMode', 'ttlDays', 'pagePath', 'windowIncludeCurrent'));
+		$this->readUserVars(array('contactEmail', 'listMode', 'ttlDays', 'pagePath', 'windowIncludeCurrent', 'accentColor'));
+		$this->setData('accentColor', trim((string) $this->getData('accentColor')));
 		$this->setData('pagePath', strtolower(trim((string) $this->getData('pagePath'))));
 		$this->setData('contactEmail', trim((string) $this->getData('contactEmail')));
 	}
@@ -82,8 +88,15 @@ class CitationImpactSettingsForm extends Form {
 
 		list($curFrom, $curTo) = CitationImpactService::windowYears(true);
 		list($fullFrom, $fullTo) = CitationImpactService::windowYears(false);
+		$themeColour = null;
+		try {
+			$themeColour = CitationImpactPalette::themeColour(CitationImpactPalette::getActiveTheme($request->getContext()));
+		} catch (Throwable $e) {
+			error_log('Citation Impact: ' . $e->getMessage());
+		}
 		$templateMgr = TemplateManager::getManager($request);
 		$templateMgr->assign(array(
+			'themeColour' => $themeColour,
 			'pluginName' => $this->plugin->getName(),
 			'windowOptions' => array(
 				'1' => __('plugins.generic.citationImpact.settings.window.current', array('from' => $curFrom, 'to' => $curTo)),
@@ -108,6 +121,8 @@ class CitationImpactSettingsForm extends Form {
 		$this->plugin->updateSetting($this->contextId, 'listMode', (string) $this->getData('listMode'), 'string');
 		$this->plugin->updateSetting($this->contextId, 'ttlDays', (int) $this->getData('ttlDays'), 'int');
 		$this->plugin->updateSetting($this->contextId, 'pagePath', (string) $this->getData('pagePath'), 'string');
+		$accent = CitationImpactPalette::normalizeHex($this->getData('accentColor'));
+		$this->plugin->updateSetting($this->contextId, 'accentColor', $accent === null ? '' : $accent, 'string');
 		$this->plugin->updateSetting($this->contextId, 'windowIncludeCurrent', $this->getData('windowIncludeCurrent') === '0' ? '0' : '1', 'string');
 		parent::execute(...$functionArgs);
 	}

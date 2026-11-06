@@ -303,3 +303,15 @@ msgstr "Rata-rata per artikel"
 msgid "plugins.generic.citationImpact.stat.max"
 msgstr "Tertinggi (1 artikel)"
 
+
+msgid "plugins.generic.citationImpact.settings.accentColor"
+msgstr "Warna aksen"
+
+msgid "plugins.generic.citationImpact.settings.accentColor.theme"
+msgstr "Kosongkan agar mengikuti warna tema aktif ({$colour}). Atau isi warna sendiri, misalnya #1e6292."
+
+msgid "plugins.generic.citationImpact.settings.accentColor.auto"
+msgstr "Kosongkan agar mengikuti tema aktif: warna diambil dari tautan, header, atau tombol tema seperti yang dilihat pengunjung. Atau isi warna sendiri, misalnya #1e6292."
+
+msgid "plugins.generic.citationImpact.settings.accentColor.invalid"
+msgstr "Isi kode warna hex seperti #1e6292, atau kosongkan."

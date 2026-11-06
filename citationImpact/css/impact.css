@@ -1,16 +1,37 @@
-/* Citation Impact — scoped to .cimpact so it sits inside any journal theme. */
+/* Citation Impact — scoped to .cimpact so it sits inside any journal theme.
+ *
+ * Every colour is a custom property. The accent set (--ci-accent*, --ci-r0…8,
+ * --ci-ring-track) is written inline from the active theme's colour by the
+ * handler, and js/impact.js re-derives everything from the colours the theme
+ * actually renders (text, background, links), including dark themes.
+ * The values below are only the fallback when neither is available.
+ */
 .cimpact {
-	--ci-line: rgba(0, 0, 0, .11);
-	--ci-grid: #e9e8e3;
+	/* Neutrals */
+	--ci-card: #fff;
 	--ci-ink: #1b1b1a;
 	--ci-ink-2: #52514e;
 	--ci-ink-3: #6f6e69;
-	--ci-card: #fff;
-	--ci-soft: #f6f8fc;
+	--ci-line: rgba(0, 0, 0, .11);
+	--ci-grid: #e9e8e3;
+	--ci-base: #c3c2b7;
+	--ci-zero: #c3c2b7;
+	--ci-track: #f3f2ee;
+	--ci-hover: #fafaf8;
+	--ci-chip: #f1f0ec;
+	--ci-good: #006300;
+	--ci-good-soft: #e7f4e7;
+	--ci-tip-bg: #1b1b1a;
+	--ci-tip-ink: #fff;
+	/* Accent (from the theme) */
 	--ci-accent: #2a78d6;
 	--ci-accent-ink: #1c5cab;
 	--ci-accent-soft: #e8f1fd;
-	--ci-good: #006300;
+	--ci-accent-softer: #f3f8ff;
+	--ci-accent-line: #b7d3f6;
+	--ci-ring-track: #cde2fb;
+	--ci-r0: #86b6ef; --ci-r1: #6da7ec; --ci-r2: #5598e7; --ci-r3: #3987e5; --ci-r4: #2a78d6;
+	--ci-r5: #256abf; --ci-r6: #1c5cab; --ci-r7: #184f95; --ci-r8: #104281;
 	--ci-radius: 12px;
 	max-width: 1000px;
 	color: var(--ci-ink);
@@ -42,14 +63,14 @@
 .cimpact-overview { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 1.25em; margin-bottom: 1.25em; }
 .cimpact-overview .cimpact-card { margin: 0; }
 .cimpact-hero {
-	background: linear-gradient(160deg, #f3f8ff 0%, #fff 62%);
+	background: linear-gradient(160deg, var(--ci-accent-softer) 0%, var(--ci-card) 62%);
 	display: flex; flex-direction: column;
 }
 .cimpact-hero-k { font-size: .9em; font-weight: 600; color: var(--ci-ink-2); }
 .cimpact-hero-v { font-size: 3.4em; font-weight: 700; line-height: 1.05; letter-spacing: -.02em; margin: .1em 0 .1em; color: var(--ci-ink); }
 .cimpact-hero-sub { color: var(--ci-ink-2); font-size: .9em; }
 .cimpact-mini { display: grid; grid-template-columns: 1fr 1fr; gap: .75em; margin: 1.1em 0 0; }
-.cimpact-mini div { background: #fff; border: 1px solid var(--ci-grid); border-radius: 10px; padding: .6em .8em; }
+.cimpact-mini div { background: var(--ci-card); border: 1px solid var(--ci-grid); border-radius: 10px; padding: .6em .8em; }
 .cimpact-mini dt { font-size: .78em; color: var(--ci-ink-3); margin: 0; }
 .cimpact-mini dd { font-size: 1.35em; font-weight: 700; margin: .1em 0 0; }
 .cimpact-ringrow { display: flex; align-items: center; gap: .9em; margin-top: auto; padding-top: 1.1em; border-top: 1px solid var(--ci-grid); }
@@ -88,7 +109,9 @@
 .cimpact .ci-chart { display: block; width: 100%; height: auto; overflow: visible; font-family: inherit; }
 .cimpact .ci-chart-narrow { display: none; }
 .cimpact .ci-grid { stroke: var(--ci-grid); stroke-width: 1; }
-.cimpact .ci-base { stroke: #c3c2b7; }
+.cimpact .ci-base { stroke: var(--ci-base); }
+.cimpact .ci-ring-bg { stroke: var(--ci-ring-track); }
+.cimpact .ci-ring-fg { stroke: var(--ci-accent); }
 .cimpact .ci-tick { fill: var(--ci-ink-3); font-size: 11px; font-variant-numeric: tabular-nums; }
 .cimpact .ci-tick-w { fill: var(--ci-accent-ink); font-weight: 700; }
 .cimpact .ci-val { fill: var(--ci-ink-2); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -102,13 +125,13 @@
 .cimpact .ci-bar:focus-visible .ci-hit { stroke: var(--ci-accent); stroke-width: 1.5; }
 .cimpact-tip {
 	position: absolute; pointer-events: none; transform: translate(-50%, -100%); opacity: 0; transition: opacity .12s;
-	background: #1b1b1a; color: #fff; font-size: 12px; line-height: 1.3; padding: 6px 9px; border-radius: 6px; white-space: nowrap;
+	background: var(--ci-tip-bg); color: var(--ci-tip-ink); font-size: 12px; line-height: 1.3; padding: 6px 9px; border-radius: 6px; white-space: nowrap;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, .18);
 }
 .cimpact-legend { list-style: none; display: flex; flex-wrap: wrap; gap: .4em 1.4em; margin: .8em 0 0; padding: 0; font-size: .82em; color: var(--ci-ink-2); }
 .cimpact-legend li { display: flex; align-items: center; gap: .5em; margin: 0; }
 .cimpact-key-ramp { flex: none; width: 34px; height: 10px; border-radius: 3px; }
-.cimpact-key-band { flex: none; width: 14px; height: 14px; border-radius: 4px; background: var(--ci-accent-soft); border: 1px solid #b7d3f6; }
+.cimpact-key-band { flex: none; width: 14px; height: 14px; border-radius: 4px; background: var(--ci-accent-soft); border: 1px solid var(--ci-accent-line); }
 .cimpact-details { margin-top: .8em; font-size: .85em; color: var(--ci-ink-2); }
 .cimpact-details summary { cursor: pointer; }
 .cimpact-ytable { border-collapse: collapse; margin-top: .5em; font-variant-numeric: tabular-nums; }
@@ -119,7 +142,7 @@
 .cimpact-dist { list-style: none; margin: 0; padding: 0; }
 .cimpact-dist li { display: grid; grid-template-columns: 8.5em minmax(0, 1fr) 6.5em; align-items: center; gap: .9em; padding: .45em 0; margin: 0; }
 .cimpact-dist-k { font-size: .9em; color: var(--ci-ink-2); }
-.cimpact-dist-track { height: 22px; background: #f3f2ee; border-radius: 6px; overflow: hidden; }
+.cimpact-dist-track { height: 22px; background: var(--ci-track); border-radius: 6px; overflow: hidden; }
 .cimpact-dist-track i { display: block; height: 100%; border-radius: 6px; }
 .cimpact-dist-v { text-align: right; font-variant-numeric: tabular-nums; }
 .cimpact-dist-v small { color: var(--ci-ink-3); margin-left: .25em; }
@@ -129,9 +152,9 @@
 .cimpact-topwrap > h2 { margin-bottom: .7em; }
 .cimpact-top { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1em; }
 .cimpact-topcard { position: relative; margin: 0; display: flex; flex-direction: column; gap: .35em; padding-top: 1.1em; overflow: hidden; }
-.cimpact-topcard::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: #104281; }
-.cimpact-topcard:nth-child(2)::before { background: #256abf; }
-.cimpact-topcard:nth-child(3)::before { background: #5598e7; }
+.cimpact-topcard::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--ci-r8); }
+.cimpact-topcard:nth-child(2)::before { background: var(--ci-r5); }
+.cimpact-topcard:nth-child(3)::before { background: var(--ci-r2); }
 .cimpact-rank { font-size: .8em; font-weight: 700; color: var(--ci-accent-ink); letter-spacing: .04em; }
 .cimpact-top-n { color: var(--ci-ink-3); font-size: .85em; }
 .cimpact-top-n strong { font-size: 2em; color: var(--ci-ink); font-weight: 700; letter-spacing: -.01em; margin-right: .1em; }
@@ -143,13 +166,13 @@
 .cimpact-top-meta { display: flex; align-items: center; gap: .6em; margin-top: auto; padding-top: .4em; font-size: .8em; color: var(--ci-ink-3); }
 
 /* FCR chip */
-.cimpact-fcr { display: inline-block; padding: .1em .5em; border-radius: 999px; background: #f1f0ec; color: var(--ci-ink-2); font-size: .85em; font-weight: 600; white-space: nowrap; }
-.cimpact-fcr.is-high { background: #e7f4e7; color: var(--ci-good); }
+.cimpact-fcr { display: inline-block; padding: .1em .5em; border-radius: 999px; background: var(--ci-chip); color: var(--ci-ink-2); font-size: .85em; font-weight: 600; white-space: nowrap; }
+.cimpact-fcr.is-high { background: var(--ci-good-soft); color: var(--ci-good); }
 
 /* Tools + table */
 .cimpact-tools { display: flex; flex-wrap: wrap; gap: .6em; margin: 0 0 .75em; }
 .cimpact-tools input, .cimpact-tools select {
-	font: inherit; font-size: .9em; padding: .5em .7em; border: 1px solid var(--ci-line); border-radius: 8px; background: #fff; color: inherit;
+	font: inherit; font-size: .9em; padding: .5em .7em; border: 1px solid var(--ci-line); border-radius: 8px; background: var(--ci-card); color: inherit;
 }
 .cimpact-tools input { flex: 1 1 220px; min-width: 0; }
 .cimpact-list { width: 100%; border-collapse: collapse; margin: 0; }
@@ -163,7 +186,7 @@
 }
 .cimpact-list th:nth-child(2), .cimpact-list td:nth-child(2) { text-align: left; white-space: normal; }
 .cimpact-list tr:last-child td { border-bottom: 0; }
-.cimpact-list tbody tr:hover td { background: #fafaf8; }
+.cimpact-list tbody tr:hover td { background: var(--ci-hover); }
 .cimpact-rk { width: 2.2em; text-align: left !important; padding-left: 0 !important; color: var(--ci-ink-3); font-size: .85em; }
 .cimpact-cc { width: 7.5em; }
 .cimpact-cbar { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 4px; width: 100%; }
@@ -177,7 +200,7 @@
 .cimpact-muted { color: var(--ci-ink-3); font-weight: 400; }
 .cimpact-more {
 	display: block; margin: 1em auto 0; font: inherit; font-size: .9em; padding: .55em 1.2em; cursor: pointer;
-	border: 1px solid var(--ci-line); border-radius: 999px; background: #fff; color: inherit;
+	border: 1px solid var(--ci-line); border-radius: 999px; background: var(--ci-card); color: inherit;
 }
 .cimpact-more:hover { background: var(--ci-accent-soft); }
 .cimpact-more[hidden], .cimpact-nomatch[hidden] { display: none; }

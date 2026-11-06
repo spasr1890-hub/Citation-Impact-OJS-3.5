@@ -64,6 +64,7 @@ class CitationImpactService {
 			'requestDelayMs' => max(0, (int) $get('requestDelayMs', 300)),
 			'pagePath' => (string) $get('pagePath', 'impact'),
 			'apiUrl' => (string) $get('apiUrl', self::DEFAULT_API),
+			'accentColor' => (string) $get('accentColor', ''),
 		);
 	}
 

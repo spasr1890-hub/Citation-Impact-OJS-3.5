@@ -126,6 +126,15 @@
 		{fbvFormSection title="plugins.generic.citationImpact.settings.ttlDays"}
 			{fbvElement type="text" id="ttlDays" value=$ttlDays size=$fbvStyles.size.SMALL required=true label="plugins.generic.citationImpact.settings.ttlDays.description"}
 		{/fbvFormSection}
+		{fbvFormSection title="plugins.generic.citationImpact.settings.accentColor"}
+			{if $themeColour}
+				{capture assign="ciAccentHelp"}{translate key="plugins.generic.citationImpact.settings.accentColor.theme" colour=$themeColour}{/capture}
+			{else}
+				{capture assign="ciAccentHelp"}{translate key="plugins.generic.citationImpact.settings.accentColor.auto"}{/capture}
+			{/if}
+			{fbvElement type="text" id="accentColor" value=$accentColor size=$fbvStyles.size.SMALL maxlength="7" label=$ciAccentHelp subLabelTranslate=false}
+			{if $themeColour}<p style="margin:.25rem 0 0"><span style="display:inline-block;width:1em;height:1em;border-radius:3px;vertical-align:-2px;margin-right:.35em;border:1px solid rgba(0,0,0,.2);background:{$themeColour|escape}"></span>{$themeColour|escape}</p>{/if}
+		{/fbvFormSection}
 		{fbvFormSection title="plugins.generic.citationImpact.settings.contactEmail"}
 			{fbvElement type="email" id="contactEmail" value=$contactEmail size=$fbvStyles.size.MEDIUM label="plugins.generic.citationImpact.settings.contactEmail.description"}
 		{/fbvFormSection}

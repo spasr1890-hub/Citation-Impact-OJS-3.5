@@ -303,3 +303,15 @@ msgstr "Mean per article"
 msgid "plugins.generic.citationImpact.stat.max"
 msgstr "Highest (one article)"
 
+
+msgid "plugins.generic.citationImpact.settings.accentColor"
+msgstr "Accent colour"
+
+msgid "plugins.generic.citationImpact.settings.accentColor.theme"
+msgstr "Leave empty to follow the active theme's colour ({$colour}). Or enter your own colour, e.g. #1e6292."
+
+msgid "plugins.generic.citationImpact.settings.accentColor.auto"
+msgstr "Leave empty to follow the active theme: the colour is taken from the theme's links, header or buttons as shown to visitors. Or enter your own colour, e.g. #1e6292."
+
+msgid "plugins.generic.citationImpact.settings.accentColor.invalid"
+msgstr "Enter a hex colour such as #1e6292, or leave the field empty."

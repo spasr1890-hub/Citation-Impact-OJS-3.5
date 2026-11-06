@@ -8,6 +8,7 @@ Plugin generik OJS 3.5 yang menambahkan halaman **Dampak & Sitasi** di dalam tem
 - Diperbarui otomatis setiap jam lewat penjadwal tugas OJS 3.5, sekitar 25 detik per putaran.
 - Tombol **Perbarui sekarang** di pengaturan plugin untuk pengisian pertama.
 - Jenis item menu **Citation Impact** di Navigation Menus.
+- **Warna mengikuti tema** yang dipakai jurnal, termasuk tema gelap (lihat *Warna & tema*).
 - Bahasa Indonesia dan Inggris mengikuti bahasa jurnal.
 - Data JSON tersedia di `/index.php/{jurnal}/impact/json`.
 
@@ -28,7 +29,7 @@ Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untu
 
 1. Masuk sebagai Journal Manager atau Administrator.
 2. Buka **Settings → Website → Plugins**, lalu klik **Upload A New Plugin**.
-3. Pilih `citationImpact-2.0.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
+3. Pilih `citationImpact-2.1.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
 4. Di tab **Installed Plugins**, cari **Citation Impact (Dimensions)** dan centang untuk mengaktifkan.
 5. Klik panah di sebelah nama plugin → **Settings**:
    - periksa **Email kontak** (diisi otomatis dari email kontak jurnal);
@@ -65,6 +66,17 @@ Setiap artikel dicek ulang setelah jumlah hari di pengaturan (bawaan 7 hari). Ka
 | Email kontak | email kontak jurnal | dikirim ke Dimensions sebagai identitas |
 
 Data tersimpan di `{files_dir}/citationImpact/`, di luar folder web. Plugin tidak membuat tabel baru dan tidak mengubah data OJS.
+
+## Warna & tema
+
+Box, grafik, donut, tab, dan bar di halaman ini mengambil warnanya dari tema yang aktif, apa pun temanya. Urutan sumber warnanya:
+
+1. **Warna aksen** di pengaturan plugin, kalau diisi (misalnya `#1e6292`).
+2. **Opsi warna tema** di *Settings → Website → Appearance*. Contohnya *Colour* pada tema Default dan turunannya, atau opsi warna utama/brand di tema lain. Warna latar dan teks tidak dipakai sebagai aksen.
+3. **Deteksi otomatis di browser** untuk tema yang tidak punya opsi warna. Warna dibaca dari tautan, header/menu, atau tombol tema seperti yang dilihat pengunjung.
+4. Kalau semuanya tidak tersedia, dipakai biru `#2a78d6`.
+
+Dari satu warna aksen itu plugin menurunkan latar lembut, warna teks aksen, dan gradasi grafik. Kontrasnya dijaga: warna yang terlalu terang, misalnya kuning, digelapkan secukupnya supaya tetap terbaca. Warna teks dan latar box juga mengikuti tema, jadi di tema berlatar gelap box ikut gelap.
 
 ## Izin Dimensions
 

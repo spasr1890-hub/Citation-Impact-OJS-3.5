@@ -13,6 +13,7 @@ namespace APP\plugins\generic\citationImpact;
 
 use APP\core\Application;
 use APP\handler\Handler;
+use APP\plugins\generic\citationImpact\classes\CitationImpactPalette;
 use APP\plugins\generic\citationImpact\classes\CitationImpactService;
 use APP\template\TemplateManager;
 use PKP\facades\Locale;
@@ -21,16 +22,10 @@ use Throwable;
 
 class CitationImpactHandler extends Handler {
 
-	const VERSION = '2.0.0';
+	const VERSION = '2.1.0';
 
-	/**
-	 * Ordinal blue ramp (light → dark), validated for a light surface:
-	 * the lightest step still clears 2:1, one hue, monotone lightness.
-	 */
-	const RAMP = array('#86b6ef', '#6da7ec', '#5598e7', '#3987e5', '#2a78d6', '#256abf', '#1c5cab', '#184f95', '#104281');
-
-	/** Neutral for "no citations" (not part of the magnitude ramp). */
-	const ZERO = '#c3c2b7';
+	/** Steps of the ordinal ramp, --ci-r0 (weak) … --ci-r8 (strong). */
+	const RAMP_STEPS = 9;
 
 	/** @var CitationImpactPlugin */
 	protected $plugin;
@@ -109,6 +104,25 @@ class CitationImpactHandler extends Handler {
 		}
 
 		$templateMgr = TemplateManager::getManager($request);
+
+		// Colours: plugin setting → active theme's colour option → detected in
+		// the browser from the rendered theme (js/impact.js) → fallback blue.
+		$settings = CitationImpactService::getSettings($context->getId());
+		$accent = CitationImpactPalette::normalizeHex($settings['accentColor']);
+		$accentSource = 'custom';
+		if ($accent === null) {
+			$accent = CitationImpactPalette::themeColour(CitationImpactPalette::getActiveTheme($context));
+			$accentSource = 'theme';
+		}
+		if ($accent === null) {
+			$accentSource = 'auto';
+		}
+		$templateMgr->assign(array(
+			'ciAccent' => $accent,
+			'ciAccentSource' => $accentSource,
+			'ciPaletteStyle' => CitationImpactPalette::style(CitationImpactPalette::accentVars($accent ?: CitationImpactPalette::FALLBACK)),
+		));
+
 		$base = $request->getBaseUrl() . '/' . $plugin->getPluginPath();
 		$templateMgr->addStyleSheet('citationImpact', $base . '/css/impact.css?v=' . self::VERSION, array('contexts' => 'frontend'));
 		$templateMgr->addJavaScript('citationImpact', $base . '/js/impact.js?v=' . self::VERSION, array('contexts' => 'frontend'));
@@ -139,14 +153,12 @@ class CitationImpactHandler extends Handler {
 			'ciUpdatedAt' => $data['updatedAt'],
 			'ciLicense' => $data['license'],
 			'ciWithoutDoi' => $data['withoutDoi'] ? $fmt($data['withoutDoi']) : null,
-			'ciListMode' => CitationImpactService::getSettings($context->getId())['listMode'],
+			'ciListMode' => $settings['listMode'],
 			'ciByYear' => array_reverse(array_map(function ($y) use ($fmt) {
 				return array('year' => $y['year'], 'articles' => $fmt($y['articles']), 'citations' => $fmt($y['citations']));
 			}, $data['byYear'])),
 			'ciChartWide' => self::yearChart($data['byYear'], $fmt, 720, 'wide'),
 			'ciChartNarrow' => self::yearChart($data['byYear'], $fmt, 360, 'narrow'),
-			'ciRampFrom' => self::RAMP[0],
-			'ciRampTo' => self::RAMP[count(self::RAMP) - 1],
 			'ciYearFrom' => $data['byYear'] ? $data['byYear'][0]['year'] : null,
 			'ciYearTo' => $data['byYear'] ? $data['byYear'][count($data['byYear']) - 1]['year'] : null,
 			'ciDistribution' => self::distribution($data['distribution'], $s['checked'], $fmt),
@@ -233,14 +245,15 @@ class CitationImpactHandler extends Handler {
 	}
 
 	/**
-	 * Pick a step of the ramp for position $i of $n (0 = lightest).
+	 * Pick a step of the ramp for position $i of $n (0 = weakest).
+	 * @return string CSS colour (a custom property set from the theme colour)
 	 */
 	protected static function rampAt($i, $n) {
-		$steps = count(self::RAMP);
+		$steps = self::RAMP_STEPS;
 		if ($n <= 1) {
-			return self::RAMP[$steps - 1];
+			return 'var(--ci-r' . ($steps - 1) . ')';
 		}
-		return self::RAMP[(int) round($i / ($n - 1) * ($steps - 1))];
+		return 'var(--ci-r' . (int) round($i / ($n - 1) * ($steps - 1)) . ')';
 	}
 
 	/**
@@ -268,8 +281,8 @@ class CitationImpactHandler extends Handler {
 		$c = 2 * M_PI * $r;
 		$on = round($c * max(0, min(100, $pct)) / 100, 2);
 		return '<svg class="ci-ring" viewBox="0 0 64 64" aria-hidden="true">'
-			. '<circle cx="32" cy="32" r="' . $r . '" fill="none" stroke="#cde2fb" stroke-width="8"/>'
-			. '<circle cx="32" cy="32" r="' . $r . '" fill="none" stroke="#2a78d6" stroke-width="8" stroke-linecap="round"'
+			. '<circle class="ci-ring-bg" cx="32" cy="32" r="' . $r . '" fill="none" stroke-width="8"/>'
+			. '<circle class="ci-ring-fg" cx="32" cy="32" r="' . $r . '" fill="none" stroke-width="8" stroke-linecap="round"'
 			. ' stroke-dasharray="' . $on . ' ' . round($c, 2) . '" transform="rotate(-90 32 32)"/>'
 			. '<text x="32" y="36.5" text-anchor="middle" class="ci-ring-t">' . (int) $pct . '%</text></svg>';
 	}
@@ -369,7 +382,7 @@ class CitationImpactHandler extends Handler {
 		foreach ($bands as $b) {
 			$maxN = max($maxN, $b['articles']);
 		}
-		$colors = array(self::ZERO, self::RAMP[0], self::RAMP[3], self::RAMP[6], self::RAMP[8]);
+		$colors = array('var(--ci-zero)', 'var(--ci-r0)', 'var(--ci-r3)', 'var(--ci-r6)', 'var(--ci-r8)');
 		foreach ($bands as $i => $b) {
 			if ($b['max'] === null) {
 				$label = $b['min'] . '+';
@@ -383,7 +396,7 @@ class CitationImpactHandler extends Handler {
 				'articles' => $fmt($b['articles']),
 				'pct' => $checked ? round($b['articles'] / $checked * 100) : 0,
 				'width' => $maxN ? round(max($b['articles'] ? 1.5 : 0, $b['articles'] / $maxN * 100), 1) : 0,
-				'color' => isset($colors[$i]) ? $colors[$i] : self::RAMP[8],
+				'color' => isset($colors[$i]) ? $colors[$i] : 'var(--ci-r8)',
 			);
 		}
 		return $out;
