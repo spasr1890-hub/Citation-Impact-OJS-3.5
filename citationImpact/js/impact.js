@@ -172,12 +172,26 @@
 			}
 			return html;
 		}
+		/* Citing works found in OpenAlex, collapsed; self-citations marked. */
+		function citing(r) {
+			if (!r.cw || !r.cw.length) return '';
+			var t = function (s, n) { return String(s || '').split('{$n}').join(nf.format(n)); };
+			var html = '<details class="cimpact-citing"><summary>' + esc(t(data.i18n.citingN, r.cw.length)) +
+				(r.sc ? ' · <span class="cimpact-self">' + esc(t(data.i18n.selfN, r.sc)) + '</span>' : '') + '</summary><ol>';
+			r.cw.forEach(function (w) {
+				var href = w.d ? 'https://doi.org/' + encodeURI(w.d) : 'https://openalex.org/' + encodeURIComponent(w.id);
+				html += '<li><a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(w.t) + '</a> <span class="cimpact-cm">' + esc(w.a) +
+					(w.s ? ' · <em>' + esc(w.s) + '</em>' : '') + (w.y ? ' · ' + esc(w.y) : '') + '</span>' +
+					(w.self ? ' <span class="cimpact-self">' + esc(data.i18n.self) + '</span>' : '') + '</li>';
+			});
+			return html + '</ol></details>';
+		}
 		function row(r, i) {
 			var doi = encodeURI(r.d);
 			return '<tr><td class="cimpact-rk">' + (i + 1) + '</td><td><a class="cimpact-t" href="' + esc(r.u) + '">' + esc(r.t) + '</a>' +
-				'<div class="cimpact-a">' + esc(r.a) + '</div>' +
+				'<div class="cimpact-a">' + esc(r.a) + (r.is ? ' · <span class="cimpact-is">' + esc(r.is) + '</span>' : '') + '</div>' +
 				'<div class="cimpact-s"><a href="https://doi.org/' + esc(doi) + '" target="_blank" rel="noopener">doi:' + esc(r.d) + '</a>' +
-				sourceLinks(r, doi) + '</div></td>' +
+				sourceLinks(r, doi) + '</div>' + citing(r) + '</td>' +
 				'<td class="cimpact-hide-sm">' + esc(r.y || '') + '</td>' +
 				'<td class="cimpact-cc">' + cites(r.c) + '</td>' +
 				'<td class="cimpact-hide-sm">' + num(r.r) + '</td>' +
@@ -238,8 +252,9 @@
 		});
 
 		// Chart tooltips (mouse and keyboard).
-		var box = root.querySelector('.cimpact-chartbox'), tip = box && box.querySelector('.cimpact-tip');
-		if (box && tip) {
+		Array.prototype.forEach.call(root.querySelectorAll('.cimpact-chartbox'), function (box) {
+			var tip = box.querySelector('.cimpact-tip');
+			if (!tip) return;
 			Array.prototype.forEach.call(box.querySelectorAll('.ci-bar'), function (g) {
 				var title = g.querySelector('title');
 				if (title) title.parentNode.removeChild(title);
@@ -256,7 +271,7 @@
 				g.addEventListener('mouseenter', show); g.addEventListener('focus', show);
 				g.addEventListener('mouseleave', hide); g.addEventListener('blur', hide);
 			});
-		}
+		});
 	}
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

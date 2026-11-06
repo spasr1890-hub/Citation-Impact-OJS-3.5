@@ -83,9 +83,15 @@
 			</section>
 			{/if}
 
+			{if $ciSelf}
+			<p class="cimpact-selfnote"><span class="cimpact-self">{translate key="plugins.generic.citationImpact.citing.self"}</span> {translate key="plugins.generic.citationImpact.self.line" self=$ciSelf.self citing=$ciSelf.citing pct=$ciSelf.pct}</p>
+			{/if}
+
 			<section class="cimpact-card cimpact-charts">
 				<div class="cimpact-tabs" role="tablist" aria-label="{translate key="plugins.generic.citationImpact.charts"}">
 					<button type="button" role="tab" id="cimpact-tab-years" aria-controls="cimpact-panel-years" aria-selected="true">{translate key="plugins.generic.citationImpact.byYear"}</button>
+					{if $ciByIssue}<button type="button" role="tab" id="cimpact-tab-issue" aria-controls="cimpact-panel-issue" aria-selected="false" tabindex="-1">{translate key="plugins.generic.citationImpact.byIssue"}</button>{/if}
+					<button type="button" role="tab" id="cimpact-tab-growth" aria-controls="cimpact-panel-growth" aria-selected="false" tabindex="-1">{translate key="plugins.generic.citationImpact.history"}</button>
 					<button type="button" role="tab" id="cimpact-tab-dist" aria-controls="cimpact-panel-dist" aria-selected="false" tabindex="-1">{translate key="plugins.generic.citationImpact.dist"}</button>
 				</div>
 
@@ -120,6 +126,54 @@
 						</li>
 					{/foreach}
 					</ul>
+				</div>
+
+				{if $ciByIssue}
+				<div class="cimpact-panel" role="tabpanel" id="cimpact-panel-issue" aria-labelledby="cimpact-tab-issue" hidden>
+					<p class="cimpact-sub">{translate key="plugins.generic.citationImpact.byIssue.note"}</p>
+					<div class="cimpact-scroll">
+					<table class="cimpact-ytable cimpact-issues">
+						<thead><tr>
+							<th>{translate key="plugins.generic.citationImpact.col.issue"}</th>
+							<th>{translate key="plugins.generic.citationImpact.chart.articlesTitle"}</th>
+							<th>{translate key="plugins.generic.citationImpact.index.cited"}</th>
+							<th>{if $ciSeparate}Dimensions{else}{translate key="plugins.generic.citationImpact.chart.citationsTitle"}{/if}</th>
+							{if $ciSeparate}<th class="cimpact-col-oa">OpenAlex</th>{/if}
+						</tr></thead>
+						<tbody>
+						{foreach from=$ciByIssue item=v}
+							<tr><td>{$v.label|escape}</td><td>{$v.articles|escape}</td><td>{$v.cited|escape} <small>({$v.citedPct|escape}%)</small></td><td><strong>{$v.citations|escape}</strong></td>{if $ciSeparate}<td class="cimpact-col-oa">{$v.openAlex|escape}</td>{/if}</tr>
+						{/foreach}
+						</tbody>
+					</table>
+					</div>
+				</div>
+				{/if}
+
+				<div class="cimpact-panel" role="tabpanel" id="cimpact-panel-growth" aria-labelledby="cimpact-tab-growth" hidden>
+					<p class="cimpact-sub">{translate key="plugins.generic.citationImpact.history.note"}</p>
+					{if $ciHistoryPoints >= 2}
+						<div class="cimpact-chartbox">{$ciHistoryWide}{$ciHistoryNarrow}<div class="cimpact-tip" role="status" aria-live="polite"></div></div>
+						<ul class="cimpact-legend">
+							<li><span class="cimpact-key-line"></span>{if $ciSeparate}Dimensions{else}{translate key="plugins.generic.citationImpact.chart.citationsTitle"}{/if}</li>
+							{if $ciSeparate}<li><span class="cimpact-key-line cimpact-key-oa"></span>OpenAlex ({translate key="plugins.generic.citationImpact.oa.tag"})</li>{/if}
+						</ul>
+					{else}
+						<p class="cimpact-card cimpact-empty">{translate key="plugins.generic.citationImpact.history.wait"}</p>
+					{/if}
+					{if $ciHistoryTable}
+					<details class="cimpact-details">
+						<summary>{translate key="plugins.generic.citationImpact.asTable"}</summary>
+						<table class="cimpact-ytable">
+							<thead><tr><th>{translate key="plugins.generic.citationImpact.history.month"}</th><th>{translate key="plugins.generic.citationImpact.chart.citationsTitle"}</th><th>{translate key="plugins.generic.citationImpact.hero.window"}</th>{if $ciSeparate}<th>OpenAlex</th>{/if}</tr></thead>
+							<tbody>
+							{foreach from=$ciHistoryTable item=h}
+								<tr><td>{$h.month|escape}</td><td>{$h.c|escape}</td><td>{$h.w|escape} <small>({$h.wf|escape}–{$h.wt|escape})</small></td>{if $ciSeparate}<td>{$h.o|escape}</td>{/if}</tr>
+							{/foreach}
+							</tbody>
+						</table>
+					</details>
+					{/if}
 				</div>
 			</section>
 
@@ -176,8 +230,9 @@
 							<td class="cimpact-rk">{$r.rank}</td>
 							<td>
 								<a class="cimpact-t" href="{$r.u|escape}">{$r.t|escape}</a>
-								<div class="cimpact-a">{$r.a|escape}</div>
+								<div class="cimpact-a">{$r.a|escape}{if $r.is} &middot; <span class="cimpact-is">{$r.is|escape}</span>{/if}</div>
 								<div class="cimpact-s"><a href="https://doi.org/{$r.d|escape}" target="_blank" rel="noopener">doi:{$r.d|escape}</a>{if $ciHasDim} &middot; <a href="https://badge.dimensions.ai/details/doi/{$r.d|escape}" target="_blank" rel="noopener">{if $ciMerged && $r.cd !== null}Dimensions: {$r.cd|escape}{else}{translate key="plugins.generic.citationImpact.dimensionsDetails"}{/if}</a>{/if}{if $r.oi} &middot; <a href="https://openalex.org/{if $r.co}works?filter=cites:{$r.oi|escape}{else}{$r.oi|escape}{/if}" target="_blank" rel="noopener">{if $ciMerged}OpenAlex: {$r.co|escape}{else}{translate key="plugins.generic.citationImpact.openAlexDetails"}{/if}</a>{/if}</div>
+								{if $r.cw}<details class="cimpact-citing"><summary>{translate key="plugins.generic.citationImpact.citing.summary" n=$r.cw|count}{if $r.sc} &middot; <span class="cimpact-self">{translate key="plugins.generic.citationImpact.citing.selfN" n=$r.sc}</span>{/if}</summary><ol>{foreach from=$r.cw item=w}<li><a href="{if $w.d}https://doi.org/{$w.d|escape}{else}https://openalex.org/{$w.id|escape}{/if}" target="_blank" rel="noopener">{$w.t|escape}</a> <span class="cimpact-cm">{$w.a|escape}{if $w.s} &middot; <em>{$w.s|escape}</em>{/if}{if $w.y} &middot; {$w.y|escape}{/if}</span>{if $w.self} <span class="cimpact-self">{translate key="plugins.generic.citationImpact.citing.self"}</span>{/if}</li>{/foreach}</ol></details>{/if}
 							</td>
 							<td class="cimpact-hide-sm">{$r.y|escape}</td>
 							<td class="cimpact-cc">{if $r.cF === null}<span class="cimpact-muted">–</span>{else}<span class="cimpact-cbar"><b>{$r.cF|escape}</b><i style="width:{$r.cW|escape}%"></i></span>{/if}</td>
@@ -191,7 +246,7 @@
 				<p class="cimpact-empty cimpact-nomatch" hidden>{translate key="plugins.generic.citationImpact.noMatch"}</p>
 				<button type="button" class="cimpact-more"{if $ciRowCount <= 25} hidden{/if}>{translate key="plugins.generic.citationImpact.more"}</button>
 				<p class="cimpact-count">{$ciShown|escape}</p>
-				<p class="cimpact-dlrow"><a class="cimpact-dl" href="{$ciCsvUrl|escape}" download>{translate key="plugins.generic.citationImpact.csv.download"}</a> <span>{translate key="plugins.generic.citationImpact.csv.help"}</span></p>
+				<p class="cimpact-dlrow"><a class="cimpact-dl" href="{$ciCsvUrl|escape}" download>{translate key="plugins.generic.citationImpact.csv.download"}</a>{if $ciHasOpenAlex} <a class="cimpact-dl cimpact-dl-2" href="{$ciCitingCsvUrl|escape}" download>{translate key="plugins.generic.citationImpact.csv.downloadCiting"}</a>{/if} <span>{translate key="plugins.generic.citationImpact.csv.help"}</span></p>
 			</section>
 		{/if}
 

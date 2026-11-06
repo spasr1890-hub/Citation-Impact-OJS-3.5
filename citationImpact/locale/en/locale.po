@@ -453,3 +453,87 @@ msgstr "i10-index, last 3 years"
 
 msgid "plugins.generic.citationImpact.hero.windowCitedNote"
 msgstr "Articles published {$from}–{$to} cited at least once"
+
+msgid "plugins.generic.citationImpact.issue.vol"
+msgstr "Vol."
+
+msgid "plugins.generic.citationImpact.issue.no"
+msgstr "No."
+
+msgid "plugins.generic.citationImpact.col.issue"
+msgstr "Issue"
+
+msgid "plugins.generic.citationImpact.byIssue"
+msgstr "By issue"
+
+msgid "plugins.generic.citationImpact.byIssue.note"
+msgstr "Citations to the articles of each issue, newest issue first."
+
+msgid "plugins.generic.citationImpact.history"
+msgstr "Citation growth"
+
+msgid "plugins.generic.citationImpact.history.note"
+msgstr "Total citations recorded once a month by this plugin, from the month it was installed."
+
+msgid "plugins.generic.citationImpact.history.wait"
+msgstr "Recording has started. The chart appears once two months have been recorded."
+
+msgid "plugins.generic.citationImpact.history.month"
+msgstr "Month"
+
+msgid "plugins.generic.citationImpact.months"
+msgstr "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec"
+
+msgid "plugins.generic.citationImpact.citing.summary"
+msgstr "{$n} citing works (OpenAlex)"
+
+msgid "plugins.generic.citationImpact.citing.self"
+msgstr "Self-citation"
+
+msgid "plugins.generic.citationImpact.citing.selfN"
+msgstr "{$n} from this journal"
+
+msgid "plugins.generic.citationImpact.self.line"
+msgstr "{$self} of the {$citing} citing works found in OpenAlex ({$pct}%) were published in this journal itself (same ISSN or one of its DOIs)."
+
+msgid "plugins.generic.citationImpact.csv.downloadCiting"
+msgstr "Download citing works (CSV)"
+
+msgid "plugins.generic.citationImpact.csv.citingFound"
+msgstr "Citing works found (OpenAlex)"
+
+msgid "plugins.generic.citationImpact.csv.selfCites"
+msgstr "Self-citations"
+
+msgid "plugins.generic.citationImpact.csv.citedTitle"
+msgstr "Cited article"
+
+msgid "plugins.generic.citationImpact.csv.citedDoi"
+msgstr "DOI of cited article"
+
+msgid "plugins.generic.citationImpact.csv.citingTitle"
+msgstr "Citing work"
+
+msgid "plugins.generic.citationImpact.csv.citingAuthors"
+msgstr "Citing authors"
+
+msgid "plugins.generic.citationImpact.csv.citingSource"
+msgstr "Citing journal or source"
+
+msgid "plugins.generic.citationImpact.csv.citingDoi"
+msgstr "Citing DOI"
+
+msgid "plugins.generic.citationImpact.block.name"
+msgstr "Citation Impact block"
+
+msgid "plugins.generic.citationImpact.block.description"
+msgstr "Sidebar summary of citations with a link to the Citation Impact page."
+
+msgid "plugins.generic.citationImpact.block.title"
+msgstr "Citation impact"
+
+msgid "plugins.generic.citationImpact.block.total"
+msgstr "All-time citations"
+
+msgid "plugins.generic.citationImpact.block.more"
+msgstr "See citation details →"

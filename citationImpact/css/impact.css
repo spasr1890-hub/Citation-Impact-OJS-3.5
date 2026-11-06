@@ -152,6 +152,34 @@
 .cimpact-ytable th, .cimpact-ytable td { padding: 3px 14px 3px 0; text-align: right; border-bottom: 1px solid var(--ci-grid); background: none; }
 .cimpact-ytable th:first-child, .cimpact-ytable td:first-child { text-align: left; }
 
+/* Growth line chart */
+.cimpact .ci-line { stroke: var(--ci-accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.cimpact .ci-line-oa { stroke: var(--ci-ink-3); stroke-width: 1.75; stroke-dasharray: 5 4; }
+.cimpact .ci-dot { fill: var(--ci-card); stroke: var(--ci-accent); stroke-width: 2; }
+.cimpact .ci-chart:hover .ci-dot { opacity: 1; }
+.cimpact-key-line { flex: none; width: 24px; height: 0; border-top: 2.5px solid var(--ci-accent); }
+.cimpact-key-line.cimpact-key-oa { border-top: 1.75px dashed var(--ci-ink-3); }
+
+/* Per issue */
+.cimpact-scroll { overflow-x: auto; }
+.cimpact-issues { width: 100%; font-size: .95em; }
+.cimpact-issues td:first-child { white-space: normal; }
+.cimpact-issues small { color: var(--ci-ink-3); }
+
+/* Citing works and self-citations */
+.cimpact-is { color: var(--ci-ink-3); }
+.cimpact-citing { margin-top: .45em; font-size: .85em; white-space: normal; }
+.cimpact-citing summary { cursor: pointer; color: var(--ci-accent-ink); font-weight: 600; }
+.cimpact-citing ol { margin: .4em 0 .2em; padding-left: 1.4em; }
+.cimpact-citing li { margin: 0 0 .45em; line-height: 1.4; }
+.cimpact-cm { display: block; color: var(--ci-ink-3); font-size: .95em; }
+.cimpact-self {
+	display: inline-block; padding: .05em .55em; border-radius: 999px; font-size: .85em; font-weight: 600; white-space: nowrap;
+	background: var(--ci-chip); color: var(--ci-ink-2); border: 1px dashed var(--ci-base);
+}
+.cimpact-selfnote { margin: 0 0 1.25em; font-size: .9em; color: var(--ci-ink-2); }
+.cimpact-dl-2 { margin-left: .4em; background: var(--ci-card); }
+
 /* Distribution */
 .cimpact-dist { list-style: none; margin: 0; padding: 0; }
 .cimpact-dist li { display: grid; grid-template-columns: 8.5em minmax(0, 1fr) 6.5em; align-items: center; gap: .9em; padding: .45em 0; margin: 0; }

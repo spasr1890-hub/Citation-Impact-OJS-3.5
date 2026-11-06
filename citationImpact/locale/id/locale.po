@@ -453,3 +453,87 @@ msgstr "i10-index 3 tahun"
 
 msgid "plugins.generic.citationImpact.hero.windowCitedNote"
 msgstr "Artikel terbit {$from}–{$to} yang sudah disitasi minimal sekali"
+
+msgid "plugins.generic.citationImpact.issue.vol"
+msgstr "Vol."
+
+msgid "plugins.generic.citationImpact.issue.no"
+msgstr "No."
+
+msgid "plugins.generic.citationImpact.col.issue"
+msgstr "Terbitan"
+
+msgid "plugins.generic.citationImpact.byIssue"
+msgstr "Per terbitan"
+
+msgid "plugins.generic.citationImpact.byIssue.note"
+msgstr "Sitasi untuk artikel di setiap terbitan, dari terbitan terbaru."
+
+msgid "plugins.generic.citationImpact.history"
+msgstr "Pertumbuhan sitasi"
+
+msgid "plugins.generic.citationImpact.history.note"
+msgstr "Total sitasi yang dicatat plugin ini setiap bulan, mulai dari bulan plugin dipasang."
+
+msgid "plugins.generic.citationImpact.history.wait"
+msgstr "Pencatatan sudah dimulai. Grafik muncul setelah ada data dua bulan."
+
+msgid "plugins.generic.citationImpact.history.month"
+msgstr "Bulan"
+
+msgid "plugins.generic.citationImpact.months"
+msgstr "Jan,Feb,Mar,Apr,Mei,Jun,Jul,Agu,Sep,Okt,Nov,Des"
+
+msgid "plugins.generic.citationImpact.citing.summary"
+msgstr "{$n} karya pengutip (OpenAlex)"
+
+msgid "plugins.generic.citationImpact.citing.self"
+msgstr "Sitasi jurnal sendiri"
+
+msgid "plugins.generic.citationImpact.citing.selfN"
+msgstr "{$n} dari jurnal ini"
+
+msgid "plugins.generic.citationImpact.self.line"
+msgstr "{$self} dari {$citing} karya pengutip yang ditemukan di OpenAlex ({$pct}%) terbit di jurnal ini sendiri (ISSN sama atau DOI jurnal ini)."
+
+msgid "plugins.generic.citationImpact.csv.downloadCiting"
+msgstr "Unduh karya pengutip (CSV)"
+
+msgid "plugins.generic.citationImpact.csv.citingFound"
+msgstr "Karya pengutip ditemukan (OpenAlex)"
+
+msgid "plugins.generic.citationImpact.csv.selfCites"
+msgstr "Sitasi jurnal sendiri"
+
+msgid "plugins.generic.citationImpact.csv.citedTitle"
+msgstr "Artikel yang disitasi"
+
+msgid "plugins.generic.citationImpact.csv.citedDoi"
+msgstr "DOI artikel yang disitasi"
+
+msgid "plugins.generic.citationImpact.csv.citingTitle"
+msgstr "Karya pengutip"
+
+msgid "plugins.generic.citationImpact.csv.citingAuthors"
+msgstr "Penulis pengutip"
+
+msgid "plugins.generic.citationImpact.csv.citingSource"
+msgstr "Jurnal/sumber pengutip"
+
+msgid "plugins.generic.citationImpact.csv.citingDoi"
+msgstr "DOI pengutip"
+
+msgid "plugins.generic.citationImpact.block.name"
+msgstr "Blok Dampak Sitasi"
+
+msgid "plugins.generic.citationImpact.block.description"
+msgstr "Ringkasan sitasi di sidebar dengan tautan ke halaman Dampak & Sitasi."
+
+msgid "plugins.generic.citationImpact.block.title"
+msgstr "Dampak sitasi"
+
+msgid "plugins.generic.citationImpact.block.total"
+msgstr "Total sitasi"
+
+msgid "plugins.generic.citationImpact.block.more"
+msgstr "Lihat rincian sitasi →"
