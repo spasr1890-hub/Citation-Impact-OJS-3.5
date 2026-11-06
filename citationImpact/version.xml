@@ -8,7 +8,7 @@
 <version>
 	<application>citationImpact</application>
 	<type>plugins.generic</type>
-	<release>2.3.0.0</release>
+	<release>2.4.0.0</release>
 	<date>2026-11-06</date>
 	<lazy-load>1</lazy-load>
 	<class>CitationImpactPlugin</class>

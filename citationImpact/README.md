@@ -3,7 +3,7 @@
 Plugin generik OJS 3.5 yang menambahkan halaman **Dampak & Sitasi** di dalam tema jurnal, berisi jumlah sitasi dari [Dimensions](https://www.dimensions.ai/) dan [OpenAlex](https://openalex.org/) untuk setiap artikel terbit yang memiliki DOI.
 
 - Halaman publik di `/index.php/{jurnal}/impact`, tampil di dalam tema jurnal (header, menu, footer).
-- Menampilkan total sitasi, **sitasi 3 tahun terakhir** (butir Dampak Ilmiah ARJUNA), sitasi 2 tahun terakhir, artikel tersitasi, h-index, i10-index, grafik per tahun terbit (rentang 3 tahun ditandai), dan daftar artikel yang bisa dicari, difilter, dan diurutkan.
+- Angka utama di bagian atas adalah **sitasi 3 tahun terakhir** (butir Dampak Ilmiah ARJUNA), lengkap dengan h-index dan i10-index 3 tahun serta persentase artikel 3 tahun yang tersitasi. Halaman juga menampilkan total sitasi sepanjang waktu, sitasi 2 tahun terakhir, artikel tersitasi, h-index, i10-index, grafik per tahun terbit (rentang 3 tahun ditandai), dan daftar artikel yang bisa dicari, difilter, dan diurutkan.
 - Daftar artikel diambil langsung dari database OJS, jadi tidak perlu OAI maupun `config.inc.php`.
 - Diperbarui otomatis setiap jam lewat penjadwal tugas OJS 3.5, sekitar 25 detik per putaran.
 - Tombol **Perbarui sekarang** di pengaturan plugin untuk pengisian pertama.
@@ -32,7 +32,7 @@ Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untu
 
 1. Masuk sebagai Journal Manager atau Administrator.
 2. Buka **Settings → Website → Plugins**, lalu klik **Upload A New Plugin**.
-3. Pilih `citationImpact-2.3.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
+3. Pilih `citationImpact-2.4.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
 4. Di tab **Installed Plugins**, cari **Citation Impact (Dimensions)** dan centang untuk mengaktifkan.
 5. Klik panah di sebelah nama plugin → **Settings**:
    - periksa **Email kontak** (diisi otomatis dari email kontak jurnal);

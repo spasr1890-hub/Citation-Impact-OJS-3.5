@@ -69,6 +69,13 @@
 .cimpact-hero-k { font-size: .9em; font-weight: 600; color: var(--ci-ink-2); }
 .cimpact-hero-v { font-size: 3.4em; font-weight: 700; line-height: 1.05; letter-spacing: -.02em; margin: .1em 0 .1em; color: var(--ci-ink); }
 .cimpact-hero-sub { color: var(--ci-ink-2); font-size: .9em; }
+.cimpact-hero-k .cimpact-win {
+	display: inline-block; margin-left: .35em; padding: .05em .6em; border-radius: 999px; vertical-align: .05em;
+	background: var(--ci-accent); color: var(--ci-card); font-size: .85em; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.cimpact-hero .cimpact-hero-v { color: var(--ci-accent-ink); }
+.cimpact-hero-all { margin-top: .35em; font-size: .85em; color: var(--ci-ink-3); }
+.cimpact-hero-all strong { color: var(--ci-ink-2); }
 .cimpact-mini { display: grid; grid-template-columns: 1fr 1fr; gap: .75em; margin: 1.1em 0 0; }
 .cimpact-mini div { background: var(--ci-card); border: 1px solid var(--ci-grid); border-radius: 10px; padding: .6em .8em; }
 .cimpact-mini dt { font-size: .78em; color: var(--ci-ink-3); margin: 0; }
@@ -94,10 +101,16 @@
 .cimpact-note { color: var(--ci-ink-3); font-size: .78em; margin: .8em 0 0; }
 
 /* Tabs */
-.cimpact-tabs { display: flex; gap: .25em; border-bottom: 1px solid var(--ci-line); margin: -.25em 0 1em; overflow-x: auto; }
+/* The base line is an inset shadow and the tabs stay inside the box: no overflow, so no
+   scroll arrows (Windows showed a 1px vertical scrollbar when tabs overlapped a border). */
+.cimpact-tabs {
+	display: flex; gap: .25em; margin: -.25em 0 1em; box-shadow: inset 0 -1px 0 var(--ci-line);
+	overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+.cimpact-tabs::-webkit-scrollbar { display: none; }
 .cimpact-tabs button {
 	font: inherit; font-size: .95em; font-weight: 600; color: var(--ci-ink-3); background: none; border: 0;
-	padding: .55em .9em .65em; margin-bottom: -1px; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap;
+	padding: .55em .9em .65em; margin: 0; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap;
 }
 .cimpact-tabs button:hover { color: var(--ci-ink); }
 .cimpact-tabs button[aria-selected="true"] { color: var(--ci-accent-ink); border-bottom-color: var(--ci-accent); }

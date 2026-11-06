@@ -435,3 +435,21 @@ msgstr "The figures use Dimensions only, as Indonesian accreditation (ARJUNA) do
 
 msgid "plugins.generic.citationImpact.badge.separate"
 msgstr "OpenAlex shown for comparison."
+
+msgid "plugins.generic.citationImpact.hero.window"
+msgstr "Citations, last 3 years"
+
+msgid "plugins.generic.citationImpact.hero.windowSub"
+msgstr "Citations to the {$articles} articles published {$from}–{$to}, the window used by the ARJUNA “Dampak Ilmiah” criterion."
+
+msgid "plugins.generic.citationImpact.hero.allTime"
+msgstr "All time: <strong>{$number}</strong> citations to {$articles} articles"
+
+msgid "plugins.generic.citationImpact.hero.windowH"
+msgstr "h-index, last 3 years"
+
+msgid "plugins.generic.citationImpact.hero.windowI10"
+msgstr "i10-index, last 3 years"
+
+msgid "plugins.generic.citationImpact.hero.windowCitedNote"
+msgstr "Articles published {$from}–{$to} cited at least once"

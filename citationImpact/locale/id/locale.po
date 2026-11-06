@@ -435,3 +435,21 @@ msgstr "Semua angka memakai Dimensions saja, sesuai yang dipakai akreditasi Indo
 
 msgid "plugins.generic.citationImpact.badge.separate"
 msgstr "OpenAlex ditampilkan sebagai pembanding."
+
+msgid "plugins.generic.citationImpact.hero.window"
+msgstr "Sitasi 3 tahun terakhir"
+
+msgid "plugins.generic.citationImpact.hero.windowSub"
+msgstr "Sitasi untuk {$articles} artikel terbit {$from}–{$to}, rentang yang dipakai butir Dampak Ilmiah ARJUNA."
+
+msgid "plugins.generic.citationImpact.hero.allTime"
+msgstr "Sepanjang waktu: <strong>{$number}</strong> sitasi dari {$articles} artikel"
+
+msgid "plugins.generic.citationImpact.hero.windowH"
+msgstr "h-index 3 tahun"
+
+msgid "plugins.generic.citationImpact.hero.windowI10"
+msgstr "i10-index 3 tahun"
+
+msgid "plugins.generic.citationImpact.hero.windowCitedNote"
+msgstr "Artikel terbit {$from}–{$to} yang sudah disitasi minimal sekali"
