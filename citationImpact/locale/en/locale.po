@@ -118,7 +118,7 @@ msgid "plugins.generic.citationImpact.pending"
 msgstr "Some articles have not been checked yet; numbers will grow after the next update."
 
 msgid "plugins.generic.citationImpact.withoutDoi"
-msgstr "{$count} published articles without a DOI are not counted."
+msgstr "{$number} published articles without a DOI are not counted."
 
 msgid "plugins.generic.citationImpact.menuItem.title"
 msgstr "Citation Impact"
@@ -178,7 +178,7 @@ msgid "plugins.generic.citationImpact.status.never"
 msgstr "Not updated yet."
 
 msgid "plugins.generic.citationImpact.status.withoutDoi"
-msgstr "{$count} articles without a DOI"
+msgstr "{$number} articles without a DOI"
 
 msgid "plugins.generic.citationImpact.status.viewPage"
 msgstr "View page"
@@ -238,7 +238,7 @@ msgid "plugins.generic.citationImpact.sourceChip"
 msgstr "Data: Dimensions"
 
 msgid "plugins.generic.citationImpact.stat.recentLine"
-msgstr "{$count} of them in the last 2 years"
+msgstr "{$number} of them in the last 2 years"
 
 msgid "plugins.generic.citationImpact.stat.citedLine"
 msgstr "{$cited} of {$total} articles cited"
@@ -315,3 +315,6 @@ msgstr "Leave empty to follow the active theme: the colour is taken from the the
 
 msgid "plugins.generic.citationImpact.settings.accentColor.invalid"
 msgstr "Enter a hex colour such as #1e6292, or leave the field empty."
+
+msgid "plugins.generic.citationImpact.chart.citation"
+msgstr "citation"

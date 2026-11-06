@@ -118,7 +118,7 @@ msgid "plugins.generic.citationImpact.pending"
 msgstr "Sebagian artikel belum dicek; angka akan bertambah setelah pembaruan berikutnya."
 
 msgid "plugins.generic.citationImpact.withoutDoi"
-msgstr "{$count} artikel terbit tanpa DOI tidak ikut dihitung."
+msgstr "{$number} artikel terbit tanpa DOI tidak ikut dihitung."
 
 msgid "plugins.generic.citationImpact.menuItem.title"
 msgstr "Dampak & Sitasi"
@@ -178,7 +178,7 @@ msgid "plugins.generic.citationImpact.status.never"
 msgstr "Belum pernah diperbarui."
 
 msgid "plugins.generic.citationImpact.status.withoutDoi"
-msgstr "{$count} artikel tanpa DOI"
+msgstr "{$number} artikel tanpa DOI"
 
 msgid "plugins.generic.citationImpact.status.viewPage"
 msgstr "Lihat halaman"
@@ -238,7 +238,7 @@ msgid "plugins.generic.citationImpact.sourceChip"
 msgstr "Data: Dimensions"
 
 msgid "plugins.generic.citationImpact.stat.recentLine"
-msgstr "{$count} di antaranya dalam 2 tahun terakhir"
+msgstr "{$number} di antaranya dalam 2 tahun terakhir"
 
 msgid "plugins.generic.citationImpact.stat.citedLine"
 msgstr "{$cited} dari {$total} artikel sudah disitasi"
@@ -315,3 +315,6 @@ msgstr "Kosongkan agar mengikuti tema aktif: warna diambil dari tautan, header, 
 
 msgid "plugins.generic.citationImpact.settings.accentColor.invalid"
 msgstr "Isi kode warna hex seperti #1e6292, atau kosongkan."
+
+msgid "plugins.generic.citationImpact.chart.citation"
+msgstr "sitasi"

@@ -1,6 +1,6 @@
 # Citation Impact (Dimensions) — plugin OJS 3.5
 
-> **Unduh:** [`dist/citationImpact-2.1.0.tar.gz`](dist/citationImpact-2.1.0.tar.gz) — siap diunggah lewat *Upload A New Plugin*. Kode sumber ada di folder [`citationImpact/`](citationImpact/).
+> **Unduh:** [`dist/citationImpact-2.1.1.tar.gz`](dist/citationImpact-2.1.1.tar.gz) — siap diunggah lewat *Upload A New Plugin*. Kode sumber ada di folder [`citationImpact/`](citationImpact/).
 
 Plugin generik OJS 3.5 yang menambahkan halaman **Dampak & Sitasi** di dalam tema jurnal, berisi jumlah sitasi dari [Dimensions](https://www.dimensions.ai/) untuk setiap artikel terbit yang memiliki DOI.
 
@@ -31,7 +31,7 @@ Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untu
 
 1. Masuk sebagai Journal Manager atau Administrator.
 2. Buka **Settings → Website → Plugins**, lalu klik **Upload A New Plugin**.
-3. Pilih `citationImpact-2.1.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
+3. Pilih `citationImpact-2.1.1.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
 4. Di tab **Installed Plugins**, cari **Citation Impact (Dimensions)** dan centang untuk mengaktifkan.
 5. Klik panah di sebelah nama plugin → **Settings**:
    - periksa **Email kontak** (diisi otomatis dari email kontak jurnal);

@@ -117,7 +117,8 @@
 				var card = dark ? mix(WHITE, surface, 0.07) : (lum(surface) > 0.6 ? WHITE : mix(WHITE, surface, 0.85));
 				var ink = parse(getComputedStyle(host).color) || BLACK;
 				if (ink[3] < 1) ink = mix(ink, surface, ink[3]);
-				var accent = parse(root.getAttribute('data-ci-accent')) || detectAccent(host) || parse('#2a78d6');
+				var accent = parse(root.getAttribute('data-ci-accent')) || detectAccent(host) ||
+					parse(root.getAttribute('data-ci-fallback')) || parse('#2a78d6');
 				var vars = neutralVars(ink, card), av = accentVars(accent, card), k;
 				for (k in av) vars[k] = av[k];
 				for (k in vars) root.style.setProperty(k, hex(vars[k]));
