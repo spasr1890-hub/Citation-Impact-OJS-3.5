@@ -11,7 +11,7 @@
 <div class="page page_citation_impact">
 	{include file="frontend/components/breadcrumbs.tpl" currentTitle=$ciTitle}
 
-	<div class="cimpact">
+	<div class="cimpact" style="{$ciPaletteStyle|escape}" data-ci-accent="{$ciAccent|escape}" data-ci-source="{$ciAccentSource|escape}">
 		<header class="cimpact-head">
 			<h1 class="cimpact-title">{$ciTitle|escape}</h1>
 			<p class="cimpact-lead">{translate key="plugins.generic.citationImpact.lead" journal=$currentContext->getLocalizedName()|escape}</p>
@@ -73,7 +73,7 @@
 					<p class="cimpact-sub">{translate key="plugins.generic.citationImpact.byYear.note"}</p>
 					<div class="cimpact-chartbox">{$ciChartWide}{$ciChartNarrow}<div class="cimpact-tip" role="status" aria-live="polite"></div></div>
 					<ul class="cimpact-legend">
-						<li><span class="cimpact-key-ramp" style="background:linear-gradient(90deg,{$ciRampFrom},{$ciRampTo})"></span>{translate key="plugins.generic.citationImpact.legend.ramp" from=$ciYearFrom to=$ciYearTo}</li>
+						<li><span class="cimpact-key-ramp" style="background:linear-gradient(90deg,var(--ci-r0),var(--ci-r8))"></span>{translate key="plugins.generic.citationImpact.legend.ramp" from=$ciYearFrom to=$ciYearTo}</li>
 						<li><span class="cimpact-key-band"></span>{translate key="plugins.generic.citationImpact.legend.band" from=$ciStats.windowFrom to=$ciStats.windowTo articles=$ciStats.windowArticles citations=$ciStats.windowCitations}</li>
 					</ul>
 					<details class="cimpact-details">
