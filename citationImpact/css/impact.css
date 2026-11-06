@@ -42,7 +42,7 @@
 /* Header */
 .cimpact-head { margin: .25em 0 1.5em; }
 .cimpact-title { margin: 0 0 .3em; }
-.cimpact-lead { color: var(--ci-ink-2); margin: 0 0 .6em; max-width: 62ch; }
+.cimpact-lead { color: var(--ci-ink-2); margin: 0 0 .6em; }
 .cimpact-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .35em .9em; color: var(--ci-ink-3); font-size: .85em; margin: 0; }
 .cimpact-chip {
 	display: inline-flex; align-items: center; gap: .35em; padding: .2em .65em; border-radius: 999px;
