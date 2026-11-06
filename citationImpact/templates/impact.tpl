@@ -17,6 +17,7 @@
 			<p class="cimpact-lead">{translate key="plugins.generic.citationImpact.lead" journal=$currentContext->getLocalizedName()|escape sources=$ciSources}</p>
 			<p class="cimpact-meta">
 				<span class="cimpact-chip">{translate key="plugins.generic.citationImpact.sourceChip" sources=$ciSources}</span>
+				{if $ciSeparate}<span class="cimpact-chip cimpact-chip-muted">{translate key="plugins.generic.citationImpact.oa.chip"}</span>{/if}
 				{if $ciUpdatedAt}<span>{translate key="plugins.generic.citationImpact.updated" date=$ciUpdatedAt|date_format:$dateFormatLong}</span>{/if}
 				<span>{translate key="plugins.generic.citationImpact.coverage" checked=$ciStats.checked total=$ciStats.articles}</span>
 			</p>
@@ -27,7 +28,7 @@
 		{else}
 			<section class="cimpact-overview" aria-label="{translate key="plugins.generic.citationImpact.summary"}">
 				<div class="cimpact-card cimpact-hero">
-					<div class="cimpact-hero-k">{translate key="plugins.generic.citationImpact.stat.total"}</div>
+					<div class="cimpact-hero-k">{translate key="plugins.generic.citationImpact.stat.total"}{if $ciSeparate} <span class="cimpact-src">Dimensions</span>{/if}</div>
 					<div class="cimpact-hero-v">{$ciStats.totalCitations}</div>
 					<div class="cimpact-hero-sub">{translate key="plugins.generic.citationImpact.stat.recentLine" number=$ciStats.recentCitations}</div>
 					<dl class="cimpact-mini">
@@ -44,7 +45,7 @@
 				</div>
 
 				<div class="cimpact-card cimpact-index">
-					<h2>{translate key="plugins.generic.citationImpact.index.title"}</h2>
+					<h2>{translate key="plugins.generic.citationImpact.index.title"}{if $ciSeparate} <span class="cimpact-src">Dimensions</span>{/if}</h2>
 					<table class="cimpact-itable">
 						<thead><tr>
 							<th scope="col"><span class="cimpact-sr">{translate key="plugins.generic.citationImpact.index.metric"}</span></th>
@@ -62,6 +63,23 @@
 					<p class="cimpact-note">{translate key="plugins.generic.citationImpact.index.note" from=$ciStats.windowFrom to=$ciStats.windowTo}</p>
 				</div>
 			</section>
+
+			{if $ciOa}
+			{* OpenAlex for comparison only: never part of the figures above. *}
+			<section class="cimpact-card cimpact-oa" aria-labelledby="cimpact-oa-h">
+				<div class="cimpact-oa-head">
+					<h2 id="cimpact-oa-h">{translate key="plugins.generic.citationImpact.oa.title"}</h2>
+					<span class="cimpact-oa-tag">{translate key="plugins.generic.citationImpact.oa.tag"}</span>
+				</div>
+				<p class="cimpact-sub">{translate key="plugins.generic.citationImpact.oa.note"}</p>
+				<dl class="cimpact-oa-grid">
+					<div><dt>{translate key="plugins.generic.citationImpact.stat.total"}</dt><dd>{$ciOa.totalCitations|escape}</dd></div>
+					<div><dt>{translate key="plugins.generic.citationImpact.oa.window" from=$ciStats.windowFrom to=$ciStats.windowTo}</dt><dd>{$ciOa.windowCitations|escape}</dd></div>
+					<div><dt>{translate key="plugins.generic.citationImpact.index.cited"}</dt><dd>{$ciOa.citedArticles|escape} <small>/ {$ciOa.checked|escape}</small></dd></div>
+					<div><dt>h-index</dt><dd>{$ciOa.hIndex|escape}</dd></div>
+				</dl>
+			</section>
+			{/if}
 
 			<section class="cimpact-card cimpact-charts">
 				<div class="cimpact-tabs" role="tablist" aria-label="{translate key="plugins.generic.citationImpact.charts"}">
@@ -136,6 +154,7 @@
 					<select class="cimpact-sort" aria-label="{translate key="plugins.generic.citationImpact.sort"}">
 						<option value="c">{translate key="plugins.generic.citationImpact.sort.cites"}</option>
 						<option value="r">{translate key="plugins.generic.citationImpact.sort.recent"}</option>
+						{if $ciSeparate}<option value="o">{translate key="plugins.generic.citationImpact.sort.openalex"}</option>{/if}
 						<option value="y">{translate key="plugins.generic.citationImpact.sort.newest"}</option>
 					</select>
 				</div>
@@ -144,9 +163,10 @@
 						<th scope="col" class="cimpact-rk">#</th>
 						<th scope="col">{translate key="plugins.generic.citationImpact.col.article"}</th>
 						<th scope="col" class="cimpact-hide-sm">{translate key="plugins.generic.citationImpact.col.year"}</th>
-						<th scope="col" class="cimpact-cc">{translate key="plugins.generic.citationImpact.col.cites"}</th>
+						<th scope="col" class="cimpact-cc">{if $ciSeparate}Dimensions{else}{translate key="plugins.generic.citationImpact.col.cites"}{/if}</th>
 						<th scope="col" class="cimpact-hide-sm" title="{translate key="plugins.generic.citationImpact.stat.recent"}">{translate key="plugins.generic.citationImpact.col.recent"}</th>
 						<th scope="col" class="cimpact-hide-sm cimpact-col-fcr" title="{translate key="plugins.generic.citationImpact.fcrHelp"}">FCR</th>
+						{if $ciSeparate}<th scope="col" class="cimpact-hide-sm cimpact-col-oa" title="{translate key="plugins.generic.citationImpact.oa.colHelp"}">OpenAlex</th>{/if}
 					</tr></thead>
 					<tbody class="cimpact-rows">
 					{foreach from=$ciRows item=r}
@@ -161,6 +181,7 @@
 							<td class="cimpact-cc">{if $r.cF === null}<span class="cimpact-muted">–</span>{else}<span class="cimpact-cbar"><b>{$r.cF|escape}</b><i style="width:{$r.cW|escape}%"></i></span>{/if}</td>
 							<td class="cimpact-hide-sm">{if $r.rF === null}<span class="cimpact-muted">–</span>{else}{$r.rF|escape}{/if}</td>
 							<td class="cimpact-hide-sm cimpact-col-fcr">{if $r.fF === null}<span class="cimpact-muted">–</span>{else}<span class="cimpact-fcr{if $r.fHigh} is-high{/if}">{$r.fF|escape}</span>{/if}</td>
+							{if $ciSeparate}<td class="cimpact-hide-sm cimpact-col-oa">{if $r.co === null}<span class="cimpact-muted">–</span>{else}{$r.co|escape}{/if}</td>{/if}
 						</tr>
 					{/foreach}
 					</tbody>
@@ -173,7 +194,7 @@
 		{/if}
 
 		<footer class="cimpact-footer">
-			<p>{translate key="plugins.generic.citationImpact.source" sources=$ciSourcesHtml}{if $ciMerged} {translate key="plugins.generic.citationImpact.sourceMerged"}{/if}</p>
+			<p>{translate key="plugins.generic.citationImpact.source" sources=$ciSourcesHtml}{if $ciMerged} {translate key="plugins.generic.citationImpact.sourceMerged"}{/if}{if $ciSeparate} {translate key="plugins.generic.citationImpact.sourceSeparate"}{/if}</p>
 			{if $ciHasData && $ciPending}<p>{translate key="plugins.generic.citationImpact.pending"}</p>{/if}
 			{if $ciWithoutDoi}<p>{translate key="plugins.generic.citationImpact.withoutDoi" number=$ciWithoutDoi}</p>{/if}
 			{if $ciLicense}<p>{$ciLicense|escape}</p>{/if}

@@ -66,7 +66,9 @@ class CitationImpactService {
 			'pagePath' => (string) $get('pagePath', 'impact'),
 			'apiUrl' => (string) $get('apiUrl', self::DEFAULT_API),
 			'accentColor' => (string) $get('accentColor', ''),
-			'sources' => in_array($get('sources', 'both'), array('both', 'dimensions', 'openalex'), true) ? $get('sources', 'both') : 'both',
+			// both: Dimensions is the main count, OpenAlex shown beside it for comparison;
+			// max: one count per article, the higher of the two.
+			'sources' => in_array($get('sources', 'both'), array('both', 'max', 'dimensions', 'openalex'), true) ? $get('sources', 'both') : 'both',
 			'openAlexKey' => trim((string) $get('openAlexKey', '')),
 			'articleBadge' => (string) $get('articleBadge', '1') !== '0',
 		);
@@ -327,6 +329,13 @@ class CitationImpactService {
 	}
 
 	/**
+	 * @return bool Dimensions is the main count and OpenAlex is only shown beside it.
+	 */
+	public function isSeparate() {
+		return $this->settings['sources'] === 'both';
+	}
+
+	/**
 	 * Per-source fields inside a store item. Dimensions keeps the 1.x keys
 	 * (c, r, f, s, t) so existing data stays valid; OpenAlex uses o-prefixed ones.
 	 */
@@ -345,13 +354,17 @@ class CitationImpactService {
 	}
 
 	/**
-	 * Numbers of one article across the enabled sources. The citation count used
-	 * everywhere is the highest per article, since each index misses some citing works.
+	 * Numbers of one article across the enabled sources.
 	 *
-	 * @return array {ok, c, r, f, cd, co, oid}; ok is true once any enabled source answered.
+	 * In the default "separate" mode the main count (c, r, f) is Dimensions
+	 * only, the figure Indonesian accreditation (ARJUNA) uses; OpenAlex is kept
+	 * apart in co/ro. In "max" mode the main count is the higher of the two.
+	 *
+	 * @return array {ok, c, r, f, cd, co, ro, oid, okOpenAlex}; ok is true once the main count is known.
 	 */
 	public function merge($m) {
-		$out = array('ok' => false, 'c' => null, 'r' => null, 'f' => null, 'cd' => null, 'co' => null, 'oid' => null);
+		$out = array('ok' => false, 'c' => null, 'r' => null, 'f' => null, 'cd' => null, 'co' => null, 'ro' => null, 'oid' => null, 'okOpenAlex' => false);
+		$rd = null;
 		foreach ($this->sources() as $source) {
 			if (!self::checkedBy($m, $source)) {
 				continue;
@@ -359,15 +372,26 @@ class CitationImpactService {
 			$k = self::keys($source);
 			$c = (int) $m[$k['c']];
 			$r = (int) (isset($m[$k['r']]) ? $m[$k['r']] : 0);
-			$out['ok'] = true;
-			$out['c'] = max((int) $out['c'], $c);
-			$out['r'] = max((int) $out['r'], $r);
 			if ($source === 'dimensions') {
 				$out['cd'] = $c;
+				$rd = $r;
 				$out['f'] = isset($m['f']) ? $m['f'] : null;
 			} else {
 				$out['co'] = $c;
+				$out['ro'] = $r;
 				$out['oid'] = isset($m['oid']) ? $m['oid'] : null;
+				$out['okOpenAlex'] = true;
+			}
+		}
+		if ($this->isSeparate()) {
+			$out['ok'] = $out['cd'] !== null;
+			$out['c'] = $out['cd'];
+			$out['r'] = $rd;
+		} else {
+			$out['ok'] = $out['cd'] !== null || $out['co'] !== null;
+			if ($out['ok']) {
+				$out['c'] = max((int) $out['cd'], (int) $out['co']);
+				$out['r'] = max((int) $rd, (int) $out['ro']);
 			}
 		}
 		return $out;
@@ -746,6 +770,8 @@ class CitationImpactService {
 		$winCites = 0;
 		$winCited = 0;
 		$winList = array();
+		// OpenAlex figures, kept apart from the main (Dimensions) count in "separate" mode.
+		$oa = array('checked' => 0, 'total' => 0, 'recent' => 0, 'cited' => 0, 'list' => array(), 'winCites' => 0, 'winCited' => 0, 'winList' => array());
 		foreach ($articles as $a) {
 			$m = $this->merge(isset($items[strtolower($a['doi'])]) ? $items[strtolower($a['doi'])] : null);
 			$ok = $m['ok'];
@@ -757,6 +783,19 @@ class CitationImpactService {
 				$cites[] = $c;
 			}
 			$year = $a['date'] !== '' ? (int) substr($a['date'], 0, 4) : 0;
+			if ($m['okOpenAlex']) {
+				$co = (int) $m['co'];
+				$oa['checked']++;
+				$oa['total'] += $co;
+				$oa['recent'] += (int) $m['ro'];
+				$oa['cited'] += $co > 0 ? 1 : 0;
+				$oa['list'][] = $co;
+				if ($year >= $winFrom && $year <= $winTo) {
+					$oa['winCites'] += $co;
+					$oa['winCited'] += $co > 0 ? 1 : 0;
+					$oa['winList'][] = $co;
+				}
+			}
 			if ($year >= $winFrom && $year <= $winTo) {
 				$winArticles++;
 				if ($ok) {
@@ -779,6 +818,7 @@ class CitationImpactService {
 				'fcr' => $ok ? $m['f'] : null,
 				'citesDimensions' => $m['cd'],
 				'citesOpenAlex' => $m['co'],
+				'recentOpenAlex' => $m['ro'],
 				'openAlexId' => $m['oid'],
 				'inWindow' => $year >= $winFrom && $year <= $winTo,
 			));
@@ -820,8 +860,9 @@ class CitationImpactService {
 		}
 
 		if (!$allRows && $this->settings['listMode'] !== 'all') {
+			// In "separate" mode an article cited only in OpenAlex is still listed (with Dimensions 0).
 			$rows = array_values(array_filter($rows, function ($r) {
-				return $r['cites'] > 0;
+				return $r['cites'] > 0 || $r['citesOpenAlex'] > 0;
 			}));
 		}
 		usort($rows, function ($a, $b) {
@@ -829,6 +870,11 @@ class CitationImpactService {
 			$cb = $b['cites'] === null ? -1 : $b['cites'];
 			if ($ca !== $cb) {
 				return $cb - $ca;
+			}
+			$oa = $a['citesOpenAlex'] === null ? -1 : $a['citesOpenAlex'];
+			$ob = $b['citesOpenAlex'] === null ? -1 : $b['citesOpenAlex'];
+			if ($oa !== $ob) {
+				return $ob - $oa;
 			}
 			return strcmp($b['date'], $a['date']);
 		});
@@ -870,6 +916,18 @@ class CitationImpactService {
 			'license' => isset($store['license']) ? $store['license'] : null,
 			'withoutDoi' => $this->countWithoutDoi(),
 			'sources' => $this->sources(),
+			'separate' => $this->isSeparate(),
+			'openAlex' => $this->isSeparate() && $oa['checked'] ? array(
+				'checked' => $oa['checked'],
+				'totalCitations' => $oa['total'],
+				'recentCitations' => $oa['recent'],
+				'citedArticles' => $oa['cited'],
+				'hIndex' => self::hIndex($oa['list']),
+				'i10Index' => count(array_filter($oa['list'], function ($c) { return $c >= 10; })),
+				'windowCitations' => $oa['winCites'],
+				'windowCitedArticles' => $oa['winCited'],
+				'windowHIndex' => self::hIndex($oa['winList']),
+			) : null,
 			'pending' => $this->countChecked($articles, $items) < count($articles),
 		);
 	}

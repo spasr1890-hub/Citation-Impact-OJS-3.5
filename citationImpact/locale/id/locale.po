@@ -335,10 +335,10 @@ msgid "plugins.generic.citationImpact.settings.sources"
 msgstr "Sumber sitasi"
 
 msgid "plugins.generic.citationImpact.settings.sources.description"
-msgstr "Jika keduanya dipakai, setiap artikel memakai angka tertinggi dari kedua sumber."
+msgstr "Akreditasi Indonesia (ARJUNA) memakai Dimensions. Dengan pilihan yang disarankan, semua angka memakai Dimensions, sedangkan OpenAlex tampil di kotak dan kolom tersendiri dan tidak pernah ikut dijumlahkan."
 
 msgid "plugins.generic.citationImpact.settings.sources.both"
-msgstr "Dimensions + OpenAlex (disarankan)"
+msgstr "Dimensions (utama) + OpenAlex sebagai pembanding (disarankan)"
 
 msgid "plugins.generic.citationImpact.settings.sources.dimensions"
 msgstr "Hanya Dimensions"
@@ -405,3 +405,33 @@ msgstr "Ya"
 
 msgid "plugins.generic.citationImpact.csv.no"
 msgstr "Tidak"
+
+msgid "plugins.generic.citationImpact.settings.sources.max"
+msgstr "Gabungan: angka tertinggi dari Dimensions dan OpenAlex per artikel"
+
+msgid "plugins.generic.citationImpact.oa.chip"
+msgstr "Pembanding: OpenAlex"
+
+msgid "plugins.generic.citationImpact.oa.title"
+msgstr "OpenAlex (pembanding)"
+
+msgid "plugins.generic.citationImpact.oa.tag"
+msgstr "Tidak dihitung di atas"
+
+msgid "plugins.generic.citationImpact.oa.note"
+msgstr "Artikel yang sama menurut OpenAlex. Hanya sebagai pembanding: angka di atas memakai Dimensions, sesuai yang dipakai akreditasi Indonesia (ARJUNA)."
+
+msgid "plugins.generic.citationImpact.oa.window"
+msgstr "Sitasi artikel {$from}–{$to}"
+
+msgid "plugins.generic.citationImpact.oa.colHelp"
+msgstr "Sitasi di OpenAlex, sebagai pembanding (tidak dihitung)"
+
+msgid "plugins.generic.citationImpact.sort.openalex"
+msgstr "Sitasi OpenAlex"
+
+msgid "plugins.generic.citationImpact.sourceSeparate"
+msgstr "Semua angka memakai Dimensions saja, sesuai yang dipakai akreditasi Indonesia (ARJUNA). <a href=\"https://openalex.org/\" target=\"_blank\" rel=\"noopener\">OpenAlex</a> ditampilkan terpisah sebagai pembanding dan tidak ikut dihitung."
+
+msgid "plugins.generic.citationImpact.badge.separate"
+msgstr "OpenAlex ditampilkan sebagai pembanding."

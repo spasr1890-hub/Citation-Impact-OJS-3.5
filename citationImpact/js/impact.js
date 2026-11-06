@@ -153,7 +153,7 @@
 		var MAX = Math.max(1, data.max || 0);
 		function cites(v) {
 			if (v == null) return '<span class="cimpact-muted">–</span>';
-			var w = Math.max(2, v / MAX * 100);
+			var w = v > 0 ? Math.max(2, v / MAX * 100) : 0;
 			return '<span class="cimpact-cbar"><b>' + nf.format(v) + '</b><i style="width:' + w.toFixed(1) + '%"></i></span>';
 		}
 		function fcr(v) {
@@ -181,7 +181,8 @@
 				'<td class="cimpact-hide-sm">' + esc(r.y || '') + '</td>' +
 				'<td class="cimpact-cc">' + cites(r.c) + '</td>' +
 				'<td class="cimpact-hide-sm">' + num(r.r) + '</td>' +
-				'<td class="cimpact-hide-sm cimpact-col-fcr">' + fcr(r.f) + '</td></tr>';
+				'<td class="cimpact-hide-sm cimpact-col-fcr">' + fcr(r.f) + '</td>' +
+				(data.separate ? '<td class="cimpact-hide-sm cimpact-col-oa">' + num(r.co) + '</td>' : '') + '</tr>';
 		}
 		function shownText(a, b) {
 			return String(data.i18n.shown || '').split('{$shown}').join(nf.format(a)).split('{$total}').join(nf.format(b));
@@ -202,7 +203,7 @@
 			});
 			view.sort(function (a, b) {
 				if (key === 'y') return (b.dt || '').localeCompare(a.dt || '');
-				var f = key === 'r' ? 'r' : 'c';
+				var f = key === 'r' ? 'r' : (key === 'o' ? 'co' : 'c');
 				return ((b[f] || 0) - (a[f] || 0)) || ((b.c || 0) - (a.c || 0)) || (b.dt || '').localeCompare(a.dt || '');
 			});
 			draw();

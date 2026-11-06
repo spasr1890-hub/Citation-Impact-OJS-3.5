@@ -10,17 +10,18 @@
 	<div class="value">
 		<a class="cimpact-badge-main" href="{$ciBadge.pageUrl|escape}">
 			<strong>{$ciBadge.count|escape}</strong>
-			<span>{if $ciBadge.count == 1}{translate key="plugins.generic.citationImpact.chart.citation"}{else}{translate key="plugins.generic.citationImpact.chart.citations"}{/if}</span>
+			<span>{if $ciBadge.count == 1}{translate key="plugins.generic.citationImpact.chart.citation"}{else}{translate key="plugins.generic.citationImpact.chart.citations"}{/if}{if $ciBadge.separate} (Dimensions){/if}</span>
 		</a>
 		{if $ciBadge.recent}<div class="cimpact-badge-sub">{translate key="plugins.generic.citationImpact.stat.recentLine" number=$ciBadge.recent}</div>{/if}
 		{if $ciBadge.links}
 			<ul class="cimpact-badge-links">
 				{foreach from=$ciBadge.links item=l}
-					<li><a href="{$l.url|escape}" target="_blank" rel="noopener">{$l.name|escape}{if $ciBadge.merged}: {$l.count|escape}{/if}</a></li>
+					<li><a href="{$l.url|escape}" target="_blank" rel="noopener">{$l.name|escape}{if $ciBadge.merged || ($ciBadge.separate && $l.name == 'OpenAlex')}: {$l.count|escape}{/if}</a></li>
 				{/foreach}
 			</ul>
 		{/if}
 		{if $ciBadge.merged}<div class="cimpact-badge-note">{translate key="plugins.generic.citationImpact.badge.merged"}</div>{/if}
+		{if $ciBadge.separate}<div class="cimpact-badge-note">{translate key="plugins.generic.citationImpact.badge.separate"}</div>{/if}
 	</div>
 </section>
 <style>
