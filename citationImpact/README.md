@@ -10,7 +10,7 @@ Plugin generik OJS 3.5 yang menambahkan halaman **Dampak & Sitasi** di dalam tem
 - Jenis item menu **Citation Impact** di Navigation Menus.
 - **Warna mengikuti tema** yang dipakai jurnal, termasuk tema gelap (lihat *Warna & tema*).
 - Bahasa Indonesia dan Inggris mengikuti bahasa jurnal.
-- **Dua sumber sitasi**: Dimensions dan OpenAlex. Per artikel dipakai angka tertinggi, dan rinciannya ditampilkan.
+- **Dua sumber sitasi, ditampilkan terpisah**: semua angka utama memakai Dimensions (yang dipakai asesor ARJUNA). OpenAlex tampil di kotak dan kolom sendiri sebagai pembanding, dan tidak ikut dihitung.
 - **Badge sitasi di halaman artikel**: jumlah sitasi, tautan ke Dimensions, dan daftar karya pengutip di OpenAlex.
 - **Ekspor CSV** semua artikel untuk bukti akreditasi (butir Dampak Ilmiah ARJUNA), langsung bisa dibuka di Excel: `/index.php/{jurnal}/impact/csv`.
 - Data JSON tersedia di `/index.php/{jurnal}/impact/json`.
@@ -32,7 +32,7 @@ Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untu
 
 1. Masuk sebagai Journal Manager atau Administrator.
 2. Buka **Settings → Website → Plugins**, lalu klik **Upload A New Plugin**.
-3. Pilih `citationImpact-2.2.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
+3. Pilih `citationImpact-2.3.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
 4. Di tab **Installed Plugins**, cari **Citation Impact (Dimensions)** dan centang untuk mengaktifkan.
 5. Klik panah di sebelah nama plugin → **Settings**:
    - periksa **Email kontak** (diisi otomatis dari email kontak jurnal);
@@ -65,7 +65,15 @@ Setiap artikel dicek ulang setelah jumlah hari di pengaturan (bawaan 7 hari). Ka
 | Dimensions | Ada FCR (Field Citation Ratio) | Satu permintaan per DOI; sering belum mengindeks jurnal yang masih muda |
 | OpenAlex | Cakupan jurnal Crossref lokal lebih luas, data CC0, 50 DOI per permintaan, ada daftar karya pengutip | Tanpa API key hanya dapat jatah gratis harian kecil yang dipakai bersama semua situs di IP server yang sama |
 
-Bawaannya keduanya dipakai, dan setiap artikel memakai **angka tertinggi** dari kedua sumber. Alasannya, masing-masing basis data tidak mencakup semua karya pengutip. Rincian per sumber tampil di daftar artikel, badge, CSV, dan JSON.
+Pilihan **Sumber sitasi** di pengaturan:
+
+| Pilihan | Angka utama (ringkasan, indeks, grafik, daftar) | OpenAlex |
+| --- | --- | --- |
+| **Dimensions (utama) + OpenAlex sebagai pembanding** (bawaan, disarankan) | Dimensions saja, sama dengan yang dihitung asesor ARJUNA | Kotak "OpenAlex (pembanding)", kolom OpenAlex di daftar, dan chip di badge; tidak pernah dijumlahkan |
+| Gabungan | Angka tertinggi dari Dimensions dan OpenAlex per artikel | Rincian per sumber di bawah tiap artikel |
+| Hanya Dimensions / Hanya OpenAlex | Satu sumber | – |
+
+Untuk keperluan akreditasi gunakan pilihan bawaan, karena angka utamanya sama persis dengan angka Dimensions.
 
 **API key OpenAlex (disarankan):** daftar gratis di https://openalex.org/settings/api, lalu tempel key-nya di pengaturan plugin. Tanpa key, kalau jatah harian IP server habis, OpenAlex dijeda sampai jatahnya pulih. Dimensions tetap jalan dan angka lama tetap tampil.
 

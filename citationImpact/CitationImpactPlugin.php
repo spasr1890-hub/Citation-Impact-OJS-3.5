@@ -165,7 +165,9 @@ class CitationImpactPlugin extends GenericPlugin implements HasTaskScheduler
             }
             $service = new CitationImpactService($context->getId(), $settings);
             $m = $service->merge($service->item($doi));
-            if (!$m['ok'] || !$m['c']) {
+            $separate = $service->isSeparate() && count($service->sources()) > 1;
+            // Separate mode: also show the badge when only OpenAlex has found a citation.
+            if (!($m['ok'] && $m['c']) && !($separate && $m['co'])) {
                 return false;
             }
             $links = [];
@@ -177,11 +179,12 @@ class CitationImpactPlugin extends GenericPlugin implements HasTaskScheduler
             }
             $templateMgr->assign([
                 'ciBadge' => [
-                    'count' => $m['c'],
+                    'count' => (int) $m['c'],
                     'recent' => $m['r'],
                     'fcr' => $m['f'],
                     'links' => $links,
-                    'merged' => count($service->sources()) > 1,
+                    'merged' => !$separate && count($service->sources()) > 1,
+                    'separate' => $separate,
                     'pageUrl' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, null, $this->getPagePath($context->getId())),
                 ],
             ]);

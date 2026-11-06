@@ -335,10 +335,10 @@ msgid "plugins.generic.citationImpact.settings.sources"
 msgstr "Citation sources"
 
 msgid "plugins.generic.citationImpact.settings.sources.description"
-msgstr "With both, each article counts the higher of the two numbers."
+msgstr "Indonesian accreditation (ARJUNA) counts Dimensions. With the recommended option every figure uses Dimensions and OpenAlex is shown in its own box and column, never added in."
 
 msgid "plugins.generic.citationImpact.settings.sources.both"
-msgstr "Dimensions + OpenAlex (recommended)"
+msgstr "Dimensions (main) + OpenAlex for comparison (recommended)"
 
 msgid "plugins.generic.citationImpact.settings.sources.dimensions"
 msgstr "Dimensions only"
@@ -405,3 +405,33 @@ msgstr "Yes"
 
 msgid "plugins.generic.citationImpact.csv.no"
 msgstr "No"
+
+msgid "plugins.generic.citationImpact.settings.sources.max"
+msgstr "Combined: the higher of Dimensions and OpenAlex per article"
+
+msgid "plugins.generic.citationImpact.oa.chip"
+msgstr "Comparison: OpenAlex"
+
+msgid "plugins.generic.citationImpact.oa.title"
+msgstr "OpenAlex (for comparison)"
+
+msgid "plugins.generic.citationImpact.oa.tag"
+msgstr "Not counted above"
+
+msgid "plugins.generic.citationImpact.oa.note"
+msgstr "The same articles according to OpenAlex. Shown for comparison only: the figures above use Dimensions, as Indonesian accreditation (ARJUNA) does."
+
+msgid "plugins.generic.citationImpact.oa.window"
+msgstr "Citations, articles {$from}–{$to}"
+
+msgid "plugins.generic.citationImpact.oa.colHelp"
+msgstr "Citations in OpenAlex, for comparison (not counted)"
+
+msgid "plugins.generic.citationImpact.sort.openalex"
+msgstr "OpenAlex citations"
+
+msgid "plugins.generic.citationImpact.sourceSeparate"
+msgstr "The figures use Dimensions only, as Indonesian accreditation (ARJUNA) does. <a href=\"https://openalex.org/\" target=\"_blank\" rel=\"noopener\">OpenAlex</a> is shown separately for comparison and is not counted."
+
+msgid "plugins.generic.citationImpact.badge.separate"
+msgstr "OpenAlex shown for comparison."

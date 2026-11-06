@@ -39,7 +39,7 @@ class CitationImpactSettingsForm extends Form {
 
 		$this->addCheck(new FormValidatorEmail($this, 'contactEmail', 'optional', 'plugins.generic.citationImpact.settings.contactEmail.invalid'));
 		$this->addCheck(new FormValidatorInSet($this, 'listMode', 'required', 'form.required', array('cited', 'all')));
-		$this->addCheck(new FormValidatorInSet($this, 'sources', 'required', 'form.required', array('both', 'dimensions', 'openalex')));
+		$this->addCheck(new FormValidatorInSet($this, 'sources', 'required', 'form.required', array('both', 'max', 'dimensions', 'openalex')));
 		$this->addCheck(new FormValidatorRegExp($this, 'openAlexKey', 'optional', 'plugins.generic.citationImpact.settings.openAlexKey.invalid', '/^[A-Za-z0-9_-]{8,128}$/'));
 		$this->addCheck(new FormValidatorInSet($this, 'windowIncludeCurrent', 'required', 'form.required', array('0', '1')));
 		$this->addCheck(new FormValidatorRegExp($this, 'pagePath', 'required', 'plugins.generic.citationImpact.settings.pagePath.invalid', '/^[a-z0-9][a-z0-9_-]{0,48}$/'));
@@ -120,6 +120,7 @@ class CitationImpactSettingsForm extends Form {
 			'impactCsvUrl' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, null, $this->plugin->getPagePath($this->contextId), 'csv'),
 			'sourceOptions' => array(
 				'both' => 'plugins.generic.citationImpact.settings.sources.both',
+				'max' => 'plugins.generic.citationImpact.settings.sources.max',
 				'dimensions' => 'plugins.generic.citationImpact.settings.sources.dimensions',
 				'openalex' => 'plugins.generic.citationImpact.settings.sources.openalex',
 			),

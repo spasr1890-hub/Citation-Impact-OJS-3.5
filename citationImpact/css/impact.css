@@ -204,6 +204,24 @@
 }
 .cimpact-more:hover { background: var(--ci-accent-soft); }
 .cimpact-more[hidden], .cimpact-nomatch[hidden] { display: none; }
+.cimpact-src {
+	display: inline-block; margin-left: .35em; padding: .05em .55em; border-radius: 999px; vertical-align: .1em;
+	font-size: .72em; font-weight: 600; letter-spacing: .01em; background: var(--ci-accent-soft); color: var(--ci-accent-ink);
+}
+.cimpact-chip-muted { background: var(--ci-chip); color: var(--ci-ink-2); }
+.cimpact-chip-muted::before { background: var(--ci-ink-3); }
+/* OpenAlex comparison: neutral styling so it reads as secondary to the accent-coloured main figures. */
+.cimpact-oa { background: var(--ci-hover); border-style: dashed; }
+.cimpact-oa-head { display: flex; flex-wrap: wrap; align-items: center; gap: .4em .8em; }
+.cimpact-oa-head h2 { margin: 0; }
+.cimpact-oa-tag { font-size: .75em; font-weight: 600; padding: .15em .65em; border-radius: 999px; background: var(--ci-chip); color: var(--ci-ink-2); }
+.cimpact-oa .cimpact-sub { margin: .5em 0 .9em; }
+.cimpact-oa-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75em; margin: 0; }
+.cimpact-oa-grid div { background: var(--ci-card); border: 1px solid var(--ci-grid); border-radius: 10px; padding: .6em .8em; }
+.cimpact-oa-grid dt { font-size: .78em; color: var(--ci-ink-3); margin: 0; }
+.cimpact-oa-grid dd { font-size: 1.35em; font-weight: 700; margin: .1em 0 0; color: var(--ci-ink-2); font-variant-numeric: tabular-nums; }
+.cimpact-oa-grid small { font-size: .6em; font-weight: 400; color: var(--ci-ink-3); }
+.cimpact-col-oa { color: var(--ci-ink-2); }
 .cimpact-nodim .cimpact-col-fcr, .cimpact-nodim .cimpact-fcr { display: none !important; }
 .cimpact-dlrow { text-align: center; margin: .9em 0 0; font-size: .85em; color: var(--ci-ink-3); }
 .cimpact-dl {
@@ -220,6 +238,7 @@
 @media (max-width: 860px) {
 	.cimpact-overview { grid-template-columns: minmax(0, 1fr); }
 	.cimpact-top { grid-template-columns: minmax(0, 1fr); }
+	.cimpact-oa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
 	.cimpact-card { padding: 1em; }
