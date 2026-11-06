@@ -32,7 +32,7 @@ Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untu
 
 1. Masuk sebagai Journal Manager atau Administrator.
 2. Buka **Settings → Website → Plugins**, lalu klik **Upload A New Plugin**.
-3. Pilih `citationImpact-2.4.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
+3. Pilih `citationImpact-2.4.1.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
 4. Di tab **Installed Plugins**, cari **Citation Impact (Dimensions)** dan centang untuk mengaktifkan.
 5. Klik panah di sebelah nama plugin → **Settings**:
    - periksa **Email kontak** (diisi otomatis dari email kontak jurnal);

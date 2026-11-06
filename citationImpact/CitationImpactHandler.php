@@ -22,7 +22,7 @@ use Throwable;
 
 class CitationImpactHandler extends Handler {
 
-	const VERSION = '2.4.0';
+	const VERSION = '2.4.1';
 
 	/** Steps of the ordinal ramp, --ci-r0 (weak) … --ci-r8 (strong). */
 	const RAMP_STEPS = 9;
