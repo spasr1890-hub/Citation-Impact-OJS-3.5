@@ -22,7 +22,7 @@ use Throwable;
 
 class CitationImpactHandler extends Handler {
 
-	const VERSION = '2.1.0';
+	const VERSION = '2.1.1';
 
 	/** Steps of the ordinal ramp, --ci-r0 (weak) … --ci-r8 (strong). */
 	const RAMP_STEPS = 9;
@@ -110,9 +110,17 @@ class CitationImpactHandler extends Handler {
 		$settings = CitationImpactService::getSettings($context->getId());
 		$accent = CitationImpactPalette::normalizeHex($settings['accentColor']);
 		$accentSource = 'custom';
+		$accentFallback = null;
 		if ($accent === null) {
 			$accent = CitationImpactPalette::themeColour(CitationImpactPalette::getActiveTheme($context));
 			$accentSource = 'theme';
+			// A black/grey theme colour (e.g. a dark header) makes every bar and
+			// highlight grey; let the browser take the theme's link colour first
+			// and keep the theme colour as the fallback.
+			if ($accent !== null && !CitationImpactPalette::isColourful($accent)) {
+				$accentFallback = $accent;
+				$accent = null;
+			}
 		}
 		if ($accent === null) {
 			$accentSource = 'auto';
@@ -120,7 +128,8 @@ class CitationImpactHandler extends Handler {
 		$templateMgr->assign(array(
 			'ciAccent' => $accent,
 			'ciAccentSource' => $accentSource,
-			'ciPaletteStyle' => CitationImpactPalette::style(CitationImpactPalette::accentVars($accent ?: CitationImpactPalette::FALLBACK)),
+			'ciAccentFallback' => $accentFallback,
+			'ciPaletteStyle' => CitationImpactPalette::style(CitationImpactPalette::accentVars($accent ?: ($accentFallback ?: CitationImpactPalette::FALLBACK))),
 		));
 
 		$base = $request->getBaseUrl() . '/' . $plugin->getPluginPath();
@@ -317,6 +326,7 @@ class CitationImpactHandler extends Handler {
 		$every = (int) ceil($n / ($narrow ? 6 : 14));
 		$labelAll = !$narrow && $n <= 14;
 		$wordCites = __('plugins.generic.citationImpact.chart.citations');
+		$wordCite = __('plugins.generic.citationImpact.chart.citation');
 		$wordArticles = __('plugins.generic.citationImpact.chart.articles');
 		$esc = array(__CLASS__, 'esc');
 
@@ -350,7 +360,7 @@ class CitationImpactHandler extends Handler {
 			$x = round($cx - $bw / 2, 1);
 			$y = round($T + $ph - $h, 1);
 			$color = self::rampAt($i, $n);
-			$tip = $yr['year'] . ' · ' . $fmt($yr['citations']) . ' ' . $wordCites . ' · ' . $fmt($yr['articles']) . ' ' . $wordArticles;
+			$tip = $yr['year'] . ' · ' . $fmt($yr['citations']) . ' ' . ($yr['citations'] == 1 ? $wordCite : $wordCites) . ' · ' . $fmt($yr['articles']) . ' ' . $wordArticles;
 			$svg .= '<g class="ci-bar" tabindex="0" data-tip="' . $esc($tip) . '"><title>' . $esc($tip) . '</title>';
 			$svg .= '<rect class="ci-hit" x="' . round($cx - $slot / 2, 1) . '" y="' . $T . '" width="' . round($slot, 1) . '" height="' . $ph . '"/>';
 			if ($h > 0) {

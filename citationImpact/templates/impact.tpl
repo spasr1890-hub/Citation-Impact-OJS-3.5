@@ -11,7 +11,7 @@
 <div class="page page_citation_impact">
 	{include file="frontend/components/breadcrumbs.tpl" currentTitle=$ciTitle}
 
-	<div class="cimpact" style="{$ciPaletteStyle|escape}" data-ci-accent="{$ciAccent|escape}" data-ci-source="{$ciAccentSource|escape}">
+	<div class="cimpact" style="{$ciPaletteStyle|escape}" data-ci-accent="{$ciAccent|escape}" data-ci-fallback="{$ciAccentFallback|escape}" data-ci-source="{$ciAccentSource|escape}">
 		<header class="cimpact-head">
 			<h1 class="cimpact-title">{$ciTitle|escape}</h1>
 			<p class="cimpact-lead">{translate key="plugins.generic.citationImpact.lead" journal=$currentContext->getLocalizedName()|escape}</p>
@@ -29,7 +29,7 @@
 				<div class="cimpact-card cimpact-hero">
 					<div class="cimpact-hero-k">{translate key="plugins.generic.citationImpact.stat.total"}</div>
 					<div class="cimpact-hero-v">{$ciStats.totalCitations}</div>
-					<div class="cimpact-hero-sub">{translate key="plugins.generic.citationImpact.stat.recentLine" count=$ciStats.recentCitations}</div>
+					<div class="cimpact-hero-sub">{translate key="plugins.generic.citationImpact.stat.recentLine" number=$ciStats.recentCitations}</div>
 					<dl class="cimpact-mini">
 						<div><dt>{translate key="plugins.generic.citationImpact.stat.mean"}</dt><dd>{$ciStats.mean}</dd></div>
 						<div><dt>{translate key="plugins.generic.citationImpact.stat.max"}</dt><dd>{$ciStats.max}</dd></div>
@@ -103,14 +103,15 @@
 				</div>
 			</section>
 
-			{if $ciTop}
+			{* The top-three cards only add something when the list is longer than three. *}
+			{if $ciTop && $ciRowCount > 3}
 			<section class="cimpact-topwrap" aria-labelledby="cimpact-top-h">
 				<h2 id="cimpact-top-h">{translate key="plugins.generic.citationImpact.top.title"}</h2>
 				<ol class="cimpact-top">
 				{foreach from=$ciTop item=r}
 					<li class="cimpact-card cimpact-topcard">
 						<div class="cimpact-rank">#{$r.rank}</div>
-						<div class="cimpact-top-n"><strong>{$r.cF|escape}</strong> {translate key="plugins.generic.citationImpact.chart.citations"}</div>
+						<div class="cimpact-top-n"><strong>{$r.cF|escape}</strong> {if $r.c == 1}{translate key="plugins.generic.citationImpact.chart.citation"}{else}{translate key="plugins.generic.citationImpact.chart.citations"}{/if}</div>
 						<a class="cimpact-top-t" href="{$r.u|escape}">{$r.t|escape}</a>
 						<div class="cimpact-a">{$r.a|escape}</div>
 						<div class="cimpact-top-meta">
@@ -173,7 +174,7 @@
 		<footer class="cimpact-footer">
 			<p>{translate key="plugins.generic.citationImpact.source"}</p>
 			{if $ciHasData && $ciPending}<p>{translate key="plugins.generic.citationImpact.pending"}</p>{/if}
-			{if $ciWithoutDoi}<p>{translate key="plugins.generic.citationImpact.withoutDoi" count=$ciWithoutDoi}</p>{/if}
+			{if $ciWithoutDoi}<p>{translate key="plugins.generic.citationImpact.withoutDoi" number=$ciWithoutDoi}</p>{/if}
 			{if $ciLicense}<p>{$ciLicense|escape}</p>{/if}
 		</footer>
 	</div>

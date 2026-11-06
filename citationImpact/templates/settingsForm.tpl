@@ -44,7 +44,7 @@
 			{translate key="plugins.generic.citationImpact.status.never"}
 		{/if}</span>
 		{if $impactStatus.withoutDoi}
-			&middot; {translate key="plugins.generic.citationImpact.status.withoutDoi" count=$impactStatus.withoutDoi}
+			&middot; {translate key="plugins.generic.citationImpact.status.withoutDoi" number=$impactStatus.withoutDoi}
 		{/if}
 	</p>
 	<p class="ci-msg" role="status" aria-live="polite" style="margin:.5rem 0;color:#555;min-height:1.2em"></p>

@@ -107,6 +107,15 @@ class CitationImpactPalette
         }
     }
 
+    /**
+     * True for a colour with a visible hue (not black, white or grey).
+     */
+    public static function isColourful(string $hex): bool
+    {
+        $c = self::rgb($hex);
+        return max($c) - min($c) >= 40;
+    }
+
     //
     // Colour math (sRGB, WCAG relative luminance)
     //
