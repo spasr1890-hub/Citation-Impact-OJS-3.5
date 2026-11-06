@@ -51,6 +51,7 @@
 	<p style="margin:.75rem 0 0">
 		<button type="button" class="pkp_button ci-run">{translate key="plugins.generic.citationImpact.refresh.button"}</button>
 		<a href="{$impactPageUrl|escape}" target="_blank" rel="noopener" style="margin-left:1rem">{translate key="plugins.generic.citationImpact.status.viewPage"}</a>
+		<a href="{$impactCsvUrl|escape}" style="margin-left:1rem">{translate key="plugins.generic.citationImpact.csv.download"}</a>
 	</p>
 	<p style="margin:.5rem 0 0;color:#777;font-size:.85em">{translate key="plugins.generic.citationImpact.refresh.help"}</p>
 </div>
@@ -116,6 +117,16 @@
 	{fbvFormArea id="citationImpactSettingsArea"}
 		{fbvFormSection title="plugins.generic.citationImpact.settings.pagePath"}
 			{fbvElement type="text" id="pagePath" value=$pagePath size=$fbvStyles.size.SMALL required=true label="plugins.generic.citationImpact.settings.pagePath.description"}
+		{/fbvFormSection}
+		{fbvFormSection title="plugins.generic.citationImpact.settings.sources"}
+			{fbvElement type="select" id="sources" from=$sourceOptions selected=$sources size=$fbvStyles.size.MEDIUM translate=true label="plugins.generic.citationImpact.settings.sources.description"}
+		{/fbvFormSection}
+		{fbvFormSection title="plugins.generic.citationImpact.settings.openAlexKey"}
+			{fbvElement type="text" id="openAlexKey" value=$openAlexKey size=$fbvStyles.size.MEDIUM label="plugins.generic.citationImpact.settings.openAlexKey.description"}
+			{if $impactStatus.oaWaitUntil}<p style="margin:.35rem 0 0;color:#8a5a00">{translate key="plugins.generic.citationImpact.status.oaWait" date=$impactStatus.oaWaitUntil|date_format:$datetimeFormatShort}</p>{/if}
+		{/fbvFormSection}
+		{fbvFormSection list=true title="plugins.generic.citationImpact.badge.title"}
+			{fbvElement type="checkbox" id="articleBadge" checked=$articleBadge label="plugins.generic.citationImpact.settings.articleBadge"}
 		{/fbvFormSection}
 		{fbvFormSection title="plugins.generic.citationImpact.settings.listMode"}
 			{fbvElement type="select" id="listMode" from=$listModeOptions selected=$listMode size=$fbvStyles.size.MEDIUM translate=true}

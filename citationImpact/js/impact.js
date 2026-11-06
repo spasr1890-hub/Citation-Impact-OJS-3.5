@@ -160,16 +160,28 @@
 			if (v == null) return '<span class="cimpact-muted">–</span>';
 			return '<span class="cimpact-fcr' + (v >= 1 ? ' is-high' : '') + '">' + nf1.format(v) + '</span>';
 		}
+		function sourceLinks(r, doi) {
+			var html = '';
+			if (data.dim) {
+				html += ' · <a href="https://badge.dimensions.ai/details/doi/' + esc(doi) + '" target="_blank" rel="noopener">' +
+					esc(data.merged && r.cd != null ? String(data.i18n.dimN || '').split('{$n}').join(nf.format(r.cd)) : data.i18n.details) + '</a>';
+			}
+			if (r.oi) {
+				html += ' · <a href="https://openalex.org/' + (r.co ? 'works?filter=cites:' : '') + esc(r.oi) + '" target="_blank" rel="noopener">' +
+					esc(data.merged ? String(data.i18n.oaN || '').split('{$n}').join(nf.format(r.co || 0)) : data.i18n.openalex) + '</a>';
+			}
+			return html;
+		}
 		function row(r, i) {
 			var doi = encodeURI(r.d);
 			return '<tr><td class="cimpact-rk">' + (i + 1) + '</td><td><a class="cimpact-t" href="' + esc(r.u) + '">' + esc(r.t) + '</a>' +
 				'<div class="cimpact-a">' + esc(r.a) + '</div>' +
-				'<div class="cimpact-s"><a href="https://doi.org/' + esc(doi) + '" target="_blank" rel="noopener">doi:' + esc(r.d) + '</a> · ' +
-				'<a href="https://badge.dimensions.ai/details/doi/' + esc(doi) + '" target="_blank" rel="noopener">' + esc(data.i18n.details) + '</a></div></td>' +
+				'<div class="cimpact-s"><a href="https://doi.org/' + esc(doi) + '" target="_blank" rel="noopener">doi:' + esc(r.d) + '</a>' +
+				sourceLinks(r, doi) + '</div></td>' +
 				'<td class="cimpact-hide-sm">' + esc(r.y || '') + '</td>' +
 				'<td class="cimpact-cc">' + cites(r.c) + '</td>' +
 				'<td class="cimpact-hide-sm">' + num(r.r) + '</td>' +
-				'<td class="cimpact-hide-sm">' + fcr(r.f) + '</td></tr>';
+				'<td class="cimpact-hide-sm cimpact-col-fcr">' + fcr(r.f) + '</td></tr>';
 		}
 		function shownText(a, b) {
 			return String(data.i18n.shown || '').split('{$shown}').join(nf.format(a)).split('{$total}').join(nf.format(b));

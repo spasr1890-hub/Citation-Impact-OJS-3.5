@@ -46,6 +46,7 @@ class CitationImpactPlugin extends GenericPlugin implements HasTaskScheduler
             Hook::add('LoadHandler', $this->callbackLoadHandler(...));
             Hook::add('NavigationMenus::itemTypes', $this->addMenuItemTypes(...));
             Hook::add('NavigationMenus::displaySettings', $this->setMenuItemDisplayDetails(...));
+            Hook::add('Templates::Article::Details', $this->articleBadge(...));
         }
         return $success;
     }
@@ -136,6 +137,58 @@ class CitationImpactPlugin extends GenericPlugin implements HasTaskScheduler
             null,
             $this->getPagePath($context->getId())
         ));
+        return false;
+    }
+
+    /**
+     * Citation badge on the article page (default theme: the details column).
+     * Shown once the article has at least one citation; read from the
+     * stored data, so it costs no API call.
+     *
+     * @hook Templates::Article::Details [[&$params, $templateMgr, &$output]]
+     */
+    public function articleBadge(string $hookName, array $args): bool
+    {
+        try {
+            $templateMgr = $args[1];
+            $output = &$args[2];
+            $request = Application::get()->getRequest();
+            $context = $request->getContext();
+            $publication = $templateMgr->getTemplateVars('publication');
+            if (!$context || !$publication) {
+                return false;
+            }
+            $settings = CitationImpactService::getSettings($context->getId());
+            $doi = CitationImpactService::normalizeDoi((string) $publication->getDoi());
+            if (!$settings['articleBadge'] || $doi === null) {
+                return false;
+            }
+            $service = new CitationImpactService($context->getId(), $settings);
+            $m = $service->merge($service->item($doi));
+            if (!$m['ok'] || !$m['c']) {
+                return false;
+            }
+            $links = [];
+            if ($m['cd'] !== null) {
+                $links[] = ['name' => 'Dimensions', 'count' => $m['cd'], 'url' => 'https://badge.dimensions.ai/details/doi/' . $doi];
+            }
+            if ($m['co'] !== null && $m['oid']) {
+                $links[] = ['name' => 'OpenAlex', 'count' => $m['co'], 'url' => 'https://openalex.org/' . ($m['co'] ? 'works?filter=cites:' : '') . $m['oid']];
+            }
+            $templateMgr->assign([
+                'ciBadge' => [
+                    'count' => $m['c'],
+                    'recent' => $m['r'],
+                    'fcr' => $m['f'],
+                    'links' => $links,
+                    'merged' => count($service->sources()) > 1,
+                    'pageUrl' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, null, $this->getPagePath($context->getId())),
+                ],
+            ]);
+            $output .= $templateMgr->fetch($this->getTemplateResource('articleBadge.tpl'));
+        } catch (Throwable $e) {
+            error_log('Citation Impact: ' . $e->getMessage());
+        }
         return false;
     }
 

@@ -22,7 +22,7 @@ use Throwable;
 
 class CitationImpactHandler extends Handler {
 
-	const VERSION = '2.1.1';
+	const VERSION = '2.2.0';
 
 	/** Steps of the ordinal ramp, --ci-r0 (weak) … --ci-r8 (strong). */
 	const RAMP_STEPS = 9;
@@ -58,6 +58,7 @@ class CitationImpactHandler extends Handler {
 					'hIndex' => 0, 'i10Index' => 0, 'windowFrom' => $wf, 'windowTo' => $wt, 'windowCitations' => 0, 'windowArticles' => 0,
 					'windowCitedArticles' => 0, 'windowHIndex' => 0, 'windowI10Index' => 0, 'maxCitations' => 0),
 				'distribution' => array(), 'byYear' => array(), 'rows' => array(), 'updatedAt' => null, 'license' => null, 'withoutDoi' => 0,
+				'sources' => $service->sources(), 'pending' => true,
 			);
 		}
 		$dispatcher = $request->getDispatcher();
@@ -77,6 +78,9 @@ class CitationImpactHandler extends Handler {
 				'c' => $r['cites'],
 				'r' => $r['recent'],
 				'f' => $r['fcr'],
+				'cd' => $r['citesDimensions'],
+				'co' => $r['citesOpenAlex'],
+				'oi' => $r['openAlexId'],
 			);
 		}
 
@@ -158,9 +162,14 @@ class CitationImpactHandler extends Handler {
 			),
 			'ciRing' => self::ring($citedPct),
 			'ciHasData' => $s['checked'] > 0,
-			'ciPending' => $s['checked'] < $s['articles'],
+			'ciPending' => $data['pending'],
 			'ciUpdatedAt' => $data['updatedAt'],
-			'ciLicense' => $data['license'],
+			'ciLicense' => in_array('dimensions', $data['sources'], true) ? $data['license'] : null,
+			'ciSources' => self::sourcesLabel($data['sources'], false),
+			'ciSourcesHtml' => self::sourcesLabel($data['sources'], true),
+			'ciMerged' => count($data['sources']) > 1,
+			'ciHasDim' => in_array('dimensions', $data['sources'], true),
+			'ciCsvUrl' => $dispatcher->url($request, Application::ROUTE_PAGE, null, $plugin->getPagePath($context->getId()), 'csv'),
 			'ciWithoutDoi' => $data['withoutDoi'] ? $fmt($data['withoutDoi']) : null,
 			'ciListMode' => $settings['listMode'],
 			'ciByYear' => array_reverse(array_map(function ($y) use ($fmt) {
@@ -180,9 +189,14 @@ class CitationImpactHandler extends Handler {
 				'max' => (int) $s['maxCitations'],
 				'locale' => $numberLocale,
 				'window' => array((int) $s['windowFrom'], (int) $s['windowTo']),
+				'dim' => in_array('dimensions', $data['sources'], true),
+				'merged' => count($data['sources']) > 1,
 				'i18n' => array(
 					'shown' => __('plugins.generic.citationImpact.shown'),
 					'details' => __('plugins.generic.citationImpact.dimensionsDetails'),
+					'openalex' => __('plugins.generic.citationImpact.openAlexDetails'),
+					'dimN' => __('plugins.generic.citationImpact.sourceCount', array('source' => 'Dimensions')),
+					'oaN' => __('plugins.generic.citationImpact.sourceCount', array('source' => 'OpenAlex')),
 					'fcrTimes' => __('plugins.generic.citationImpact.fcrTimes'),
 				),
 			), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE),
@@ -225,6 +239,9 @@ class CitationImpactHandler extends Handler {
 				'date' => $r['date'],
 				'url' => $dispatcher->url($request, Application::ROUTE_PAGE, null, 'article', 'view', array((string) ($r['urlPath'] ? $r['urlPath'] : $r['submissionId']))),
 				'times_cited' => $r['cites'],
+				'times_cited_dimensions' => $r['citesDimensions'],
+				'times_cited_openalex' => $r['citesOpenAlex'],
+				'openalex_id' => $r['openAlexId'],
 				'recent_citations' => $r['recent'],
 				'field_citation_ratio' => $r['fcr'],
 			);
@@ -234,8 +251,12 @@ class CitationImpactHandler extends Handler {
 		header('Cache-Control: no-cache');
 		echo json_encode(array(
 			'journal' => $context->getLocalizedName(),
-			'source' => 'Dimensions (https://www.dimensions.ai)',
-			'license' => $data['license'],
+			'source' => self::sourcesLabel($data['sources'], false),
+			'sources' => array_map(function ($s) {
+				return $s === 'openalex' ? 'OpenAlex (https://openalex.org)' : 'Dimensions (https://www.dimensions.ai)';
+			}, $data['sources']),
+			'times_cited_rule' => count($data['sources']) > 1 ? 'highest of the sources, per article' : 'single source',
+			'license' => in_array('dimensions', $data['sources'], true) ? $data['license'] : null,
 			'updated_at' => $data['updatedAt'] ? date('c', $data['updatedAt']) : null,
 			'stats' => $data['stats'],
 			'by_year' => $data['byYear'],
@@ -243,6 +264,124 @@ class CitationImpactHandler extends Handler {
 			'articles' => $articles,
 		), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_INVALID_UTF8_SUBSTITUTE);
 		exit;
+	}
+
+	/**
+	 * Spreadsheet of every article, for accreditation evidence:
+	 * /{journal}/{pagePath}/csv[?sep=comma|semicolon]
+	 *
+	 * Opens directly in Excel: UTF-8 with BOM, ";" and decimal comma for
+	 * Indonesian, "," and decimal point otherwise.
+	 */
+	public function csv($args, $request) {
+		$context = $request->getContext();
+		if (!$context) {
+			throw new NotFoundHttpException();
+		}
+		$locale = Locale::getLocale();
+		$sep = (string) $request->getUserVar('sep');
+		$sep = $sep === 'comma' ? ',' : ($sep === 'semicolon' ? ';' : (strpos($locale, 'id') === 0 ? ';' : ','));
+		$dec = $sep === ';' ? ',' : '.';
+
+		$service = new CitationImpactService($context->getId());
+		$data = $service->build($locale, true);
+		$dimensions = in_array('dimensions', $data['sources'], true);
+		$openAlex = in_array('openalex', $data['sources'], true);
+		$s = $data['stats'];
+		$dispatcher = $request->getDispatcher();
+		$yes = __('plugins.generic.citationImpact.csv.yes');
+		$no = __('plugins.generic.citationImpact.csv.no');
+		$num = function ($v, $d = 0) use ($dec) {
+			return $v === null ? '' : number_format((float) $v, $d, $dec, '');
+		};
+
+		$head = array(
+			__('plugins.generic.citationImpact.csv.rank'),
+			__('plugins.generic.citationImpact.csv.title'),
+			__('plugins.generic.citationImpact.csv.authors'),
+			__('plugins.generic.citationImpact.col.year'),
+			__('plugins.generic.citationImpact.csv.date'),
+			'DOI',
+			__('plugins.generic.citationImpact.csv.url'),
+			__('plugins.generic.citationImpact.csv.cites'),
+		);
+		if ($dimensions && $openAlex) {
+			$head[] = __('plugins.generic.citationImpact.csv.citesSource', array('source' => 'Dimensions'));
+			$head[] = __('plugins.generic.citationImpact.csv.citesSource', array('source' => 'OpenAlex'));
+		}
+		$head[] = __('plugins.generic.citationImpact.stat.recent');
+		if ($dimensions) {
+			$head[] = 'FCR (Dimensions)';
+		}
+		$head[] = __('plugins.generic.citationImpact.csv.window', array('from' => $s['windowFrom'], 'to' => $s['windowTo']));
+		if ($dimensions) {
+			$head[] = __('plugins.generic.citationImpact.csv.link', array('source' => 'Dimensions'));
+		}
+		if ($openAlex) {
+			$head[] = __('plugins.generic.citationImpact.csv.link', array('source' => 'OpenAlex'));
+		}
+
+		$filename = 'citation-impact-' . preg_replace('/[^a-z0-9_-]+/i', '-', $context->getPath()) . '-' . date('Y-m-d') . '.csv';
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		header('Cache-Control: no-cache');
+		header('X-LiteSpeed-Cache-Control: no-cache');
+		$out = fopen('php://output', 'w');
+		fwrite($out, "\xEF\xBB\xBF");
+		$put = function (array $row) use ($out, $sep) {
+			// Neutralise spreadsheet formulas in text taken from the database.
+			fputcsv($out, array_map(function ($v) {
+				$v = (string) $v;
+				return preg_match('/^[=+\-@\t\r]/', $v) ? "'" . $v : $v;
+			}, $row), $sep, '"', '');
+		};
+		$put($head);
+		foreach ($data['rows'] as $i => $r) {
+			$row = array(
+				$i + 1,
+				$r['title'] !== '' ? $r['title'] : $r['doi'],
+				implode('; ', $r['authors']),
+				$r['year'],
+				$r['date'],
+				$r['doi'],
+				$dispatcher->url($request, Application::ROUTE_PAGE, null, 'article', 'view', array((string) ($r['urlPath'] ? $r['urlPath'] : $r['submissionId']))),
+				$num($r['cites']),
+			);
+			if ($dimensions && $openAlex) {
+				$row[] = $num($r['citesDimensions']);
+				$row[] = $num($r['citesOpenAlex']);
+			}
+			$row[] = $num($r['recent']);
+			if ($dimensions) {
+				$row[] = $num($r['fcr'], 2);
+			}
+			$row[] = $r['inWindow'] ? $yes : $no;
+			if ($dimensions) {
+				$row[] = 'https://badge.dimensions.ai/details/doi/' . $r['doi'];
+			}
+			if ($openAlex) {
+				$row[] = $r['openAlexId'] ? 'https://openalex.org/works?filter=cites:' . $r['openAlexId'] : '';
+			}
+			$put($row);
+		}
+		fclose($out);
+		exit;
+	}
+
+	/**
+	 * "Dimensions", "OpenAlex" or "Dimensions and OpenAlex", optionally linked.
+	 */
+	public static function sourcesLabel(array $sources, $html) {
+		$names = array();
+		foreach (array('dimensions', 'openalex') as $s) {
+			if (!in_array($s, $sources, true)) {
+				continue;
+			}
+			$name = $s === 'openalex' ? 'OpenAlex' : 'Dimensions';
+			$url = $s === 'openalex' ? 'https://openalex.org/' : 'https://www.dimensions.ai/';
+			$names[] = $html ? '<a href="' . $url . '" target="_blank" rel="noopener">' . $name . '</a>' : $name;
+		}
+		return implode(' ' . __('plugins.generic.citationImpact.and') . ' ', $names);
 	}
 
 	//

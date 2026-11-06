@@ -11,12 +11,12 @@
 <div class="page page_citation_impact">
 	{include file="frontend/components/breadcrumbs.tpl" currentTitle=$ciTitle}
 
-	<div class="cimpact" style="{$ciPaletteStyle|escape}" data-ci-accent="{$ciAccent|escape}" data-ci-fallback="{$ciAccentFallback|escape}" data-ci-source="{$ciAccentSource|escape}">
+	<div class="cimpact{if !$ciHasDim} cimpact-nodim{/if}" style="{$ciPaletteStyle|escape}" data-ci-accent="{$ciAccent|escape}" data-ci-fallback="{$ciAccentFallback|escape}" data-ci-source="{$ciAccentSource|escape}">
 		<header class="cimpact-head">
 			<h1 class="cimpact-title">{$ciTitle|escape}</h1>
-			<p class="cimpact-lead">{translate key="plugins.generic.citationImpact.lead" journal=$currentContext->getLocalizedName()|escape}</p>
+			<p class="cimpact-lead">{translate key="plugins.generic.citationImpact.lead" journal=$currentContext->getLocalizedName()|escape sources=$ciSources}</p>
 			<p class="cimpact-meta">
-				<span class="cimpact-chip">{translate key="plugins.generic.citationImpact.sourceChip"}</span>
+				<span class="cimpact-chip">{translate key="plugins.generic.citationImpact.sourceChip" sources=$ciSources}</span>
 				{if $ciUpdatedAt}<span>{translate key="plugins.generic.citationImpact.updated" date=$ciUpdatedAt|date_format:$dateFormatLong}</span>{/if}
 				<span>{translate key="plugins.generic.citationImpact.coverage" checked=$ciStats.checked total=$ciStats.articles}</span>
 			</p>
@@ -126,7 +126,7 @@
 
 			<section class="cimpact-card">
 				<h2>{if $ciListMode == 'all'}{translate key="plugins.generic.citationImpact.list.all"}{else}{translate key="plugins.generic.citationImpact.list.cited"}{/if}</h2>
-				<p class="cimpact-sub">{if $ciListMode != 'all'}{translate key="plugins.generic.citationImpact.list.onlyCited"} {/if}{translate key="plugins.generic.citationImpact.fcrHelp"}</p>
+				<p class="cimpact-sub">{if $ciListMode != 'all'}{translate key="plugins.generic.citationImpact.list.onlyCited"} {/if}{if $ciHasDim}{translate key="plugins.generic.citationImpact.fcrHelp"}{/if}</p>
 				<div class="cimpact-tools">
 					<input type="search" class="cimpact-q" placeholder="{translate key="plugins.generic.citationImpact.search"}" aria-label="{translate key="plugins.generic.citationImpact.search"}">
 					<select class="cimpact-years" aria-label="{translate key="plugins.generic.citationImpact.filter.years"}">
@@ -146,7 +146,7 @@
 						<th scope="col" class="cimpact-hide-sm">{translate key="plugins.generic.citationImpact.col.year"}</th>
 						<th scope="col" class="cimpact-cc">{translate key="plugins.generic.citationImpact.col.cites"}</th>
 						<th scope="col" class="cimpact-hide-sm" title="{translate key="plugins.generic.citationImpact.stat.recent"}">{translate key="plugins.generic.citationImpact.col.recent"}</th>
-						<th scope="col" class="cimpact-hide-sm" title="{translate key="plugins.generic.citationImpact.fcrHelp"}">FCR</th>
+						<th scope="col" class="cimpact-hide-sm cimpact-col-fcr" title="{translate key="plugins.generic.citationImpact.fcrHelp"}">FCR</th>
 					</tr></thead>
 					<tbody class="cimpact-rows">
 					{foreach from=$ciRows item=r}
@@ -155,12 +155,12 @@
 							<td>
 								<a class="cimpact-t" href="{$r.u|escape}">{$r.t|escape}</a>
 								<div class="cimpact-a">{$r.a|escape}</div>
-								<div class="cimpact-s"><a href="https://doi.org/{$r.d|escape}" target="_blank" rel="noopener">doi:{$r.d|escape}</a> &middot; <a href="https://badge.dimensions.ai/details/doi/{$r.d|escape}" target="_blank" rel="noopener">{translate key="plugins.generic.citationImpact.dimensionsDetails"}</a></div>
+								<div class="cimpact-s"><a href="https://doi.org/{$r.d|escape}" target="_blank" rel="noopener">doi:{$r.d|escape}</a>{if $ciHasDim} &middot; <a href="https://badge.dimensions.ai/details/doi/{$r.d|escape}" target="_blank" rel="noopener">{if $ciMerged && $r.cd !== null}Dimensions: {$r.cd|escape}{else}{translate key="plugins.generic.citationImpact.dimensionsDetails"}{/if}</a>{/if}{if $r.oi} &middot; <a href="https://openalex.org/{if $r.co}works?filter=cites:{$r.oi|escape}{else}{$r.oi|escape}{/if}" target="_blank" rel="noopener">{if $ciMerged}OpenAlex: {$r.co|escape}{else}{translate key="plugins.generic.citationImpact.openAlexDetails"}{/if}</a>{/if}</div>
 							</td>
 							<td class="cimpact-hide-sm">{$r.y|escape}</td>
 							<td class="cimpact-cc">{if $r.cF === null}<span class="cimpact-muted">–</span>{else}<span class="cimpact-cbar"><b>{$r.cF|escape}</b><i style="width:{$r.cW|escape}%"></i></span>{/if}</td>
 							<td class="cimpact-hide-sm">{if $r.rF === null}<span class="cimpact-muted">–</span>{else}{$r.rF|escape}{/if}</td>
-							<td class="cimpact-hide-sm">{if $r.fF === null}<span class="cimpact-muted">–</span>{else}<span class="cimpact-fcr{if $r.fHigh} is-high{/if}">{$r.fF|escape}</span>{/if}</td>
+							<td class="cimpact-hide-sm cimpact-col-fcr">{if $r.fF === null}<span class="cimpact-muted">–</span>{else}<span class="cimpact-fcr{if $r.fHigh} is-high{/if}">{$r.fF|escape}</span>{/if}</td>
 						</tr>
 					{/foreach}
 					</tbody>
@@ -168,11 +168,12 @@
 				<p class="cimpact-empty cimpact-nomatch" hidden>{translate key="plugins.generic.citationImpact.noMatch"}</p>
 				<button type="button" class="cimpact-more"{if $ciRowCount <= 25} hidden{/if}>{translate key="plugins.generic.citationImpact.more"}</button>
 				<p class="cimpact-count">{$ciShown|escape}</p>
+				<p class="cimpact-dlrow"><a class="cimpact-dl" href="{$ciCsvUrl|escape}" download>{translate key="plugins.generic.citationImpact.csv.download"}</a> <span>{translate key="plugins.generic.citationImpact.csv.help"}</span></p>
 			</section>
 		{/if}
 
 		<footer class="cimpact-footer">
-			<p>{translate key="plugins.generic.citationImpact.source"}</p>
+			<p>{translate key="plugins.generic.citationImpact.source" sources=$ciSourcesHtml}{if $ciMerged} {translate key="plugins.generic.citationImpact.sourceMerged"}{/if}</p>
 			{if $ciHasData && $ciPending}<p>{translate key="plugins.generic.citationImpact.pending"}</p>{/if}
 			{if $ciWithoutDoi}<p>{translate key="plugins.generic.citationImpact.withoutDoi" number=$ciWithoutDoi}</p>{/if}
 			{if $ciLicense}<p>{$ciLicense|escape}</p>{/if}

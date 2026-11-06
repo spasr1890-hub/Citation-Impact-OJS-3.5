@@ -1,6 +1,6 @@
-# Citation Impact (Dimensions) — plugin OJS 3.5
+# Citation Impact (Dimensions & OpenAlex) — plugin OJS 3.5
 
-Plugin generik OJS 3.5 yang menambahkan halaman **Dampak & Sitasi** di dalam tema jurnal, berisi jumlah sitasi dari [Dimensions](https://www.dimensions.ai/) untuk setiap artikel terbit yang memiliki DOI.
+Plugin generik OJS 3.5 yang menambahkan halaman **Dampak & Sitasi** di dalam tema jurnal, berisi jumlah sitasi dari [Dimensions](https://www.dimensions.ai/) dan [OpenAlex](https://openalex.org/) untuk setiap artikel terbit yang memiliki DOI.
 
 - Halaman publik di `/index.php/{jurnal}/impact`, tampil di dalam tema jurnal (header, menu, footer).
 - Menampilkan total sitasi, **sitasi 3 tahun terakhir** (butir Dampak Ilmiah ARJUNA), sitasi 2 tahun terakhir, artikel tersitasi, h-index, i10-index, grafik per tahun terbit (rentang 3 tahun ditandai), dan daftar artikel yang bisa dicari, difilter, dan diurutkan.
@@ -10,6 +10,9 @@ Plugin generik OJS 3.5 yang menambahkan halaman **Dampak & Sitasi** di dalam tem
 - Jenis item menu **Citation Impact** di Navigation Menus.
 - **Warna mengikuti tema** yang dipakai jurnal, termasuk tema gelap (lihat *Warna & tema*).
 - Bahasa Indonesia dan Inggris mengikuti bahasa jurnal.
+- **Dua sumber sitasi**: Dimensions dan OpenAlex. Per artikel dipakai angka tertinggi, dan rinciannya ditampilkan.
+- **Badge sitasi di halaman artikel**: jumlah sitasi, tautan ke Dimensions, dan daftar karya pengutip di OpenAlex.
+- **Ekspor CSV** semua artikel untuk bukti akreditasi (butir Dampak Ilmiah ARJUNA), langsung bisa dibuka di Excel: `/index.php/{jurnal}/impact/csv`.
 - Data JSON tersedia di `/index.php/{jurnal}/impact/json`.
 
 Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untuk OJS 3.3 gunakan versi 1.x.
@@ -29,7 +32,7 @@ Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untu
 
 1. Masuk sebagai Journal Manager atau Administrator.
 2. Buka **Settings → Website → Plugins**, lalu klik **Upload A New Plugin**.
-3. Pilih `citationImpact-2.1.1.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
+3. Pilih `citationImpact-2.2.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
 4. Di tab **Installed Plugins**, cari **Citation Impact (Dimensions)** dan centang untuk mengaktifkan.
 5. Klik panah di sebelah nama plugin → **Settings**:
    - periksa **Email kontak** (diisi otomatis dari email kontak jurnal);
@@ -55,10 +58,38 @@ Plugin mendaftarkan tugas terjadwal setiap jam. Di OJS 3.5 tugas ini dijalankan 
 
 Setiap artikel dicek ulang setelah jumlah hari di pengaturan (bawaan 7 hari). Kalau Dimensions membalas 429 (terlalu banyak permintaan), plugin berhenti dan jeda 15 menit; angka lama tetap ditampilkan.
 
+## Sumber sitasi
+
+| Sumber | Kelebihan | Catatan |
+| --- | --- | --- |
+| Dimensions | Ada FCR (Field Citation Ratio) | Satu permintaan per DOI; sering belum mengindeks jurnal yang masih muda |
+| OpenAlex | Cakupan jurnal Crossref lokal lebih luas, data CC0, 50 DOI per permintaan, ada daftar karya pengutip | Tanpa API key hanya dapat jatah gratis harian kecil yang dipakai bersama semua situs di IP server yang sama |
+
+Bawaannya keduanya dipakai, dan setiap artikel memakai **angka tertinggi** dari kedua sumber. Alasannya, masing-masing basis data tidak mencakup semua karya pengutip. Rincian per sumber tampil di daftar artikel, badge, CSV, dan JSON.
+
+**API key OpenAlex (disarankan):** daftar gratis di https://openalex.org/settings/api, lalu tempel key-nya di pengaturan plugin. Tanpa key, kalau jatah harian IP server habis, OpenAlex dijeda sampai jatahnya pulih. Dimensions tetap jalan dan angka lama tetap tampil.
+
+## Badge di halaman artikel
+
+Badge muncul di kolom detail artikel (tema Default dan tema lain yang memakai hook `Templates::Article::Details`), hanya untuk artikel yang punya minimal satu sitasi. Datanya diambil dari cache plugin, jadi tidak ada permintaan API tambahan saat halaman dibuka. Badge bisa dimatikan di pengaturan.
+
+## Ekspor CSV
+
+Tombol **Unduh CSV** ada di bawah daftar artikel dan di pengaturan plugin. Isinya semua artikel ber-DOI (tidak hanya yang tersitasi):
+- judul, penulis, tahun, tanggal terbit, DOI, URL artikel;
+- jumlah sitasi (dan per sumber), sitasi 2 tahun terakhir, FCR;
+- penanda apakah artikel terbit dalam rentang "3 tahun terakhir";
+- tautan Dimensions dan daftar karya pengutip di OpenAlex.
+
+Untuk bahasa Indonesia pemisahnya `;` dengan koma desimal (sesuai Excel berbahasa Indonesia), untuk bahasa lain `,`. Kalau perlu pemisah tertentu, tambahkan `?sep=comma` atau `?sep=semicolon` di akhir alamat.
+
 ## Pengaturan
 
 | Pengaturan | Bawaan | Keterangan |
 | --- | --- | --- |
+| Sumber sitasi | Dimensions + OpenAlex | atau hanya salah satu |
+| API key OpenAlex | kosong | opsional, gratis; memberi jurnal jatah harian sendiri |
+| Badge di halaman artikel | aktif | tampil untuk artikel yang tersitasi |
 | Alamat halaman | `impact` | halaman tampil di `/index.php/{jurnal}/{alamat}` |
 | Daftar artikel | hanya yang tersitasi | atau semua artikel |
 | Rentang "3 tahun terakhir" | tahun berjalan + 2 tahun sebelumnya | atau 3 tahun penuh sebelumnya; sesuaikan dengan asesor |

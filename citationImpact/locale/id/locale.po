@@ -7,16 +7,16 @@ msgstr ""
 "Language: id\n"
 
 msgid "plugins.generic.citationImpact.displayName"
-msgstr "Citation Impact (Dimensions)"
+msgstr "Citation Impact (Dimensions & OpenAlex)"
 
 msgid "plugins.generic.citationImpact.description"
-msgstr "Menambahkan halaman dampak sitasi ke jurnal, berisi jumlah sitasi dari Dimensions untuk setiap artikel terbit yang memiliki DOI."
+msgstr "Menambahkan halaman dampak sitasi ke jurnal, berisi jumlah sitasi dari Dimensions dan OpenAlex untuk setiap artikel terbit yang memiliki DOI, badge sitasi di halaman artikel, dan ekspor CSV."
 
 msgid "plugins.generic.citationImpact.pageTitle"
 msgstr "Dampak & Sitasi"
 
 msgid "plugins.generic.citationImpact.lead"
-msgstr "Jumlah sitasi artikel {$journal} menurut Dimensions."
+msgstr "Jumlah sitasi artikel {$journal} menurut {$sources}."
 
 msgid "plugins.generic.citationImpact.updated"
 msgstr "Diperbarui {$date}"
@@ -112,7 +112,7 @@ msgid "plugins.generic.citationImpact.shown"
 msgstr "Menampilkan {$shown} dari {$total}"
 
 msgid "plugins.generic.citationImpact.source"
-msgstr "Sumber data sitasi: <a href=\"https://www.dimensions.ai/\" target=\"_blank\" rel=\"noopener\">Dimensions</a>. Angka bisa berbeda dari Google Scholar, Scopus, atau Crossref karena cakupan basis datanya berbeda."
+msgstr "Sumber data sitasi: {$sources}. Angka bisa berbeda dari Google Scholar, Scopus, atau Crossref karena cakupan basis datanya berbeda."
 
 msgid "plugins.generic.citationImpact.pending"
 msgstr "Sebagian artikel belum dicek; angka akan bertambah setelah pembaruan berikutnya."
@@ -124,10 +124,10 @@ msgid "plugins.generic.citationImpact.menuItem.title"
 msgstr "Dampak & Sitasi"
 
 msgid "plugins.generic.citationImpact.menuItem.description"
-msgstr "Tautan ke halaman Dampak & Sitasi (data sitasi dari Dimensions)."
+msgstr "Tautan ke halaman Dampak & Sitasi (data sitasi dari Dimensions dan OpenAlex)."
 
 msgid "plugins.generic.citationImpact.settings.description"
-msgstr "Jumlah sitasi diambil dari Dimensions Metrics API (gratis) untuk setiap artikel terbit yang memiliki DOI. Data diperbarui otomatis setiap jam dalam kelompok kecil. Data Dimensions gratis untuk penggunaan non-komersial; pengelola situs jurnal diminta menghubungi publishing@digital-science.com."
+msgstr "Jumlah sitasi diambil dari Dimensions Metrics API dan OpenAlex (keduanya gratis) untuk setiap artikel terbit yang memiliki DOI. Data diperbarui otomatis setiap jam dalam kelompok kecil. Data Dimensions gratis untuk penggunaan non-komersial; pengelola situs jurnal diminta menghubungi publishing@digital-science.com. Data OpenAlex berlisensi CC0."
 
 msgid "plugins.generic.citationImpact.settings.pagePath"
 msgstr "Alamat halaman"
@@ -151,7 +151,7 @@ msgid "plugins.generic.citationImpact.settings.ttlDays"
 msgstr "Cek ulang setiap artikel tiap (hari)"
 
 msgid "plugins.generic.citationImpact.settings.ttlDays.description"
-msgstr "Antara 1 dan 90. Nilai bawaan 7 sudah cukup ringan bagi layanan Dimensions."
+msgstr "Antara 1 dan 90. Nilai bawaan 7 sudah cukup ringan bagi layanan Dimensions dan OpenAlex."
 
 msgid "plugins.generic.citationImpact.settings.ttlDays.invalid"
 msgstr "Isi bilangan bulat antara 1 dan 90."
@@ -160,7 +160,7 @@ msgid "plugins.generic.citationImpact.settings.contactEmail"
 msgstr "Email kontak"
 
 msgid "plugins.generic.citationImpact.settings.contactEmail.description"
-msgstr "Dikirim ke Dimensions bersama setiap permintaan agar mereka bisa menghubungi jurnal."
+msgstr "Dikirim ke Dimensions dan OpenAlex bersama setiap permintaan agar mereka bisa menghubungi jurnal."
 
 msgid "plugins.generic.citationImpact.settings.contactEmail.invalid"
 msgstr "Masukkan alamat email yang valid."
@@ -196,13 +196,13 @@ msgid "plugins.generic.citationImpact.refresh.busy"
 msgstr "Pembaruan lain sedang berjalan, menunggu…"
 
 msgid "plugins.generic.citationImpact.refresh.backoff"
-msgstr "Dimensions meminta jeda. Pembaruan otomatis dilanjutkan 15 menit lagi."
+msgstr "Sumber sitasi meminta jeda (Dimensions: 15 menit; OpenAlex: sampai batas hariannya diatur ulang). Pembaruan dilanjutkan otomatis."
 
 msgid "plugins.generic.citationImpact.refresh.error"
 msgstr "Server tidak dapat dihubungi. Mencoba lagi dalam 10 detik…"
 
 msgid "plugins.generic.citationImpact.refresh.stopped"
-msgstr "Berhenti karena Dimensions berulang kali gagal merespons. Coba lagi nanti."
+msgstr "Berhenti karena sumber sitasi berulang kali gagal merespons. Coba lagi nanti."
 
 msgid "plugins.generic.citationImpact.refresh.help"
 msgstr "Hanya perlu untuk pengisian pertama atau setelah perubahan besar; setelah itu plugin memperbarui datanya sendiri setiap jam."
@@ -235,7 +235,7 @@ msgid "plugins.generic.citationImpact.settings.window.description"
 msgstr "Tahun terbit yang dijumlahkan untuk sitasi \"3 tahun terakhir\" (butir Dampak Ilmiah ARJUNA). Sesuaikan dengan rentang yang dipakai asesor."
 
 msgid "plugins.generic.citationImpact.sourceChip"
-msgstr "Data: Dimensions"
+msgstr "Data: {$sources}"
 
 msgid "plugins.generic.citationImpact.stat.recentLine"
 msgstr "{$number} di antaranya dalam 2 tahun terakhir"
@@ -318,3 +318,90 @@ msgstr "Isi kode warna hex seperti #1e6292, atau kosongkan."
 
 msgid "plugins.generic.citationImpact.chart.citation"
 msgstr "sitasi"
+
+msgid "plugins.generic.citationImpact.sourceMerged"
+msgstr "Untuk setiap artikel dipakai angka tertinggi dari kedua sumber, karena masing-masing basis data tidak mencakup semua karya pengutip."
+
+msgid "plugins.generic.citationImpact.and"
+msgstr "dan"
+
+msgid "plugins.generic.citationImpact.openAlexDetails"
+msgstr "Detail di OpenAlex"
+
+msgid "plugins.generic.citationImpact.sourceCount"
+msgstr "{$source}: {$n}"
+
+msgid "plugins.generic.citationImpact.settings.sources"
+msgstr "Sumber sitasi"
+
+msgid "plugins.generic.citationImpact.settings.sources.description"
+msgstr "Jika keduanya dipakai, setiap artikel memakai angka tertinggi dari kedua sumber."
+
+msgid "plugins.generic.citationImpact.settings.sources.both"
+msgstr "Dimensions + OpenAlex (disarankan)"
+
+msgid "plugins.generic.citationImpact.settings.sources.dimensions"
+msgstr "Hanya Dimensions"
+
+msgid "plugins.generic.citationImpact.settings.sources.openalex"
+msgstr "Hanya OpenAlex"
+
+msgid "plugins.generic.citationImpact.settings.openAlexKey"
+msgstr "API key OpenAlex (opsional)"
+
+msgid "plugins.generic.citationImpact.settings.openAlexKey.description"
+msgstr "Tanpa key, OpenAlex hanya memberi jatah gratis harian kecil yang dipakai bersama semua situs di alamat IP server Anda. Key gratis dari openalex.org/settings/api memberi jurnal jatah sendiri."
+
+msgid "plugins.generic.citationImpact.settings.openAlexKey.invalid"
+msgstr "API key OpenAlex tampaknya salah: hanya huruf, angka, - dan _."
+
+msgid "plugins.generic.citationImpact.settings.articleBadge"
+msgstr "Tampilkan jumlah sitasi di halaman artikel (artikel dengan minimal satu sitasi)"
+
+msgid "plugins.generic.citationImpact.status.oaWait"
+msgstr "Batas harian OpenAlex tercapai; pembaruan OpenAlex dilanjutkan setelah {$date}. Isi API key agar tidak terulang."
+
+msgid "plugins.generic.citationImpact.badge.title"
+msgstr "Sitasi"
+
+msgid "plugins.generic.citationImpact.badge.merged"
+msgstr "Angka tertinggi dari Dimensions dan OpenAlex."
+
+msgid "plugins.generic.citationImpact.csv.download"
+msgstr "Unduh CSV"
+
+msgid "plugins.generic.citationImpact.csv.help"
+msgstr "Semua artikel beserta jumlah sitasinya, untuk bukti akreditasi (bisa dibuka di Excel)."
+
+msgid "plugins.generic.citationImpact.csv.rank"
+msgstr "No."
+
+msgid "plugins.generic.citationImpact.csv.title"
+msgstr "Judul"
+
+msgid "plugins.generic.citationImpact.csv.authors"
+msgstr "Penulis"
+
+msgid "plugins.generic.citationImpact.csv.date"
+msgstr "Tanggal terbit"
+
+msgid "plugins.generic.citationImpact.csv.url"
+msgstr "URL artikel"
+
+msgid "plugins.generic.citationImpact.csv.cites"
+msgstr "Sitasi"
+
+msgid "plugins.generic.citationImpact.csv.citesSource"
+msgstr "Sitasi ({$source})"
+
+msgid "plugins.generic.citationImpact.csv.window"
+msgstr "Terbit {$from}–{$to}"
+
+msgid "plugins.generic.citationImpact.csv.link"
+msgstr "Tautan {$source}"
+
+msgid "plugins.generic.citationImpact.csv.yes"
+msgstr "Ya"
+
+msgid "plugins.generic.citationImpact.csv.no"
+msgstr "Tidak"
