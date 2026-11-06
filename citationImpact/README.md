@@ -13,6 +13,11 @@ Plugin generik OJS 3.5 yang menambahkan halaman **Dampak & Sitasi** di dalam tem
 - **Dua sumber sitasi, ditampilkan terpisah**: semua angka utama memakai Dimensions (yang dipakai asesor ARJUNA). OpenAlex tampil di kotak dan kolom sendiri sebagai pembanding, dan tidak ikut dihitung.
 - **Badge sitasi di halaman artikel**: jumlah sitasi, tautan ke Dimensions, dan daftar karya pengutip di OpenAlex.
 - **Ekspor CSV** semua artikel untuk bukti akreditasi (butir Dampak Ilmiah ARJUNA), langsung bisa dibuka di Excel: `/index.php/{jurnal}/impact/csv`.
+- **Daftar karya pengutip** per artikel (dari OpenAlex), bisa dibuka di daftar artikel dan diunduh sebagai CSV bukti: `/index.php/{jurnal}/impact/citing`.
+- **Penanda sitasi dari jurnal sendiri (self-citation)**: karya pengutip dengan ISSN jurnal ini atau DOI jurnal ini diberi label, beserta jumlah dan persentasenya.
+- **Rincian per terbitan** (volume/nomor): jumlah artikel, artikel tersitasi, dan sitasi per terbitan.
+- **Grafik pertumbuhan sitasi**: total sitasi dicatat setiap bulan sejak plugin dipasang.
+- **Blok sidebar** berisi sitasi 3 tahun terakhir, total sitasi, h-index, dan tautan ke halaman Impact.
 - Data JSON tersedia di `/index.php/{jurnal}/impact/json`.
 
 Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untuk OJS 3.3 gunakan versi 1.x.
@@ -32,7 +37,7 @@ Versi 2.x ini khusus **OJS 3.5** (PHP 8.2+, MySQL/MariaDB atau PostgreSQL). Untu
 
 1. Masuk sebagai Journal Manager atau Administrator.
 2. Buka **Settings → Website → Plugins**, lalu klik **Upload A New Plugin**.
-3. Pilih `citationImpact-2.4.2.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
+3. Pilih `citationImpact-2.5.0.tar.gz`, klik **Save**, dan tunggu sampai muncul "Successfully installed".
 4. Di tab **Installed Plugins**, cari **Citation Impact (Dimensions)** dan centang untuk mengaktifkan.
 5. Klik panah di sebelah nama plugin → **Settings**:
    - periksa **Email kontak** (diisi otomatis dari email kontak jurnal);
@@ -80,6 +85,25 @@ Untuk keperluan akreditasi gunakan pilihan bawaan, karena angka utamanya sama pe
 ## Badge di halaman artikel
 
 Badge muncul di kolom detail artikel (tema Default dan tema lain yang memakai hook `Templates::Article::Details`), hanya untuk artikel yang punya minimal satu sitasi. Datanya diambil dari cache plugin, jadi tidak ada permintaan API tambahan saat halaman dibuka. Badge bisa dimatikan di pengaturan.
+
+## Karya pengutip dan self-citation
+
+Untuk setiap artikel yang punya sitasi di OpenAlex, plugin mengambil daftar karya pengutipnya. Satu permintaan bisa mencakup sampai 25 artikel, dan daftarnya diperbarui saat jumlah sitasinya berubah atau setelah interval cek ulang.
+- Di daftar artikel, klik **"N karya pengutip (OpenAlex)"** untuk melihat judul, penulis, jurnal, dan tahun setiap pengutip.
+- **Unduh karya pengutip (CSV)** menghasilkan satu baris per pasangan artikel–pengutip. Berguna kalau asesor meminta contoh artikel pengutip.
+- Karya pengutip diberi label **Sitasi jurnal sendiri** kalau ISSN sumbernya sama dengan ISSN jurnal ini (diambil dari Settings → Journal), atau DOI-nya milik artikel jurnal ini. Jumlah dan persentasenya ditampilkan di bawah ringkasan.
+
+Dimensions Metrics API tidak menyediakan daftar karya pengutip, jadi daftar dan penanda self-citation selalu berasal dari OpenAlex.
+
+## Per terbitan dan pertumbuhan sitasi
+
+Kotak grafik punya empat tab: per tahun terbit, **per terbitan**, **pertumbuhan sitasi**, dan distribusi.
+- **Per terbitan:** memakai label terbitan OJS (mis. "Vol. 2 No. 1 (2025)").
+- **Pertumbuhan sitasi:** dicatat sekali sebulan oleh tugas terjadwal (nilai bulan berjalan diperbarui setiap kali data disegarkan). Grafiknya muncul setelah ada data dua bulan, jadi pasang plugin sedini mungkin.
+
+## Blok sidebar
+
+Buka **Settings → Website → Appearance → Setup → Sidebar**, lalu seret **Blok Dampak Sitasi** ke daftar sidebar dan simpan. Blok membaca ringkasan yang disimpan saat penyegaran terakhir, jadi tidak memperlambat halaman.
 
 ## Ekspor CSV
 

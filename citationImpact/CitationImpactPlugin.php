@@ -23,6 +23,7 @@ use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\Hook;
+use PKP\plugins\PluginRegistry;
 use PKP\plugins\interfaces\HasTaskScheduler;
 use PKP\scheduledTask\PKPScheduler;
 use Throwable;
@@ -47,6 +48,8 @@ class CitationImpactPlugin extends GenericPlugin implements HasTaskScheduler
             Hook::add('NavigationMenus::itemTypes', $this->addMenuItemTypes(...));
             Hook::add('NavigationMenus::displaySettings', $this->setMenuItemDisplayDetails(...));
             Hook::add('Templates::Article::Details', $this->articleBadge(...));
+            // Sidebar block; add it under Settings > Website > Appearance > Setup > Sidebar.
+            PluginRegistry::register('blocks', new CitationImpactBlockPlugin($this), $this->getPluginPath());
         }
         return $success;
     }

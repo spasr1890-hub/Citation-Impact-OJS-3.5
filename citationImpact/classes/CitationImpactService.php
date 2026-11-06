@@ -187,9 +187,11 @@ class CitationImpactService {
 			->whereNotNull('d.doi')
 			->where('d.doi', '<>', '')
 			->orderBy('p.date_published', 'desc')
-			->select(self::hasUrlPath()
-				? array('s.submission_id', 'p.publication_id', 'p.date_published', 'p.url_path', 's.locale', 'd.doi as doi')
-				: array('s.submission_id', 'p.publication_id', 'p.date_published', 's.locale', 'd.doi as doi'))
+			->select(array_merge(
+				array('s.submission_id', 'p.publication_id', 'p.date_published', 's.locale', 'd.doi as doi'),
+				self::hasColumn('url_path') ? array('p.url_path') : array(),
+				self::hasColumn('issue_id') ? array('p.issue_id') : array()
+			))
 			->get();
 
 		$articles = array();
@@ -207,26 +209,96 @@ class CitationImpactService {
 				'date' => $row->date_published ? substr((string) $row->date_published, 0, 10) : '',
 				'urlPath' => !empty($row->url_path) ? (string) $row->url_path : null,
 				'locale' => $row->locale ? (string) $row->locale : null,
+				'issueId' => !empty($row->issue_id) ? (int) $row->issue_id : null,
 			);
 		}
 		return $articles;
 	}
 
 	/**
-	 * publications.url_path is checked once per request, so the query keeps
-	 * working on databases whose schema differs slightly.
+	 * Optional publications columns (url_path, issue_id) are checked once per
+	 * request, so the query keeps working on databases whose schema differs.
 	 * @return bool
 	 */
-	protected static function hasUrlPath() {
-		static $has = null;
-		if ($has === null) {
+	protected static function hasColumn($column) {
+		static $has = array();
+		if (!isset($has[$column])) {
 			try {
-				$has = Schema::hasColumn('publications', 'url_path');
+				$has[$column] = Schema::hasColumn('publications', $column);
 			} catch (\Throwable $e) {
-				$has = false;
+				$has[$column] = false;
 			}
 		}
-		return $has;
+		return $has[$column];
+	}
+
+	/**
+	 * Issues of this journal, labelled like OJS does ("Vol. 2 No. 1 (2025): Title").
+	 * @param int[] $issueIds
+	 * @param string $locale
+	 * @return array issueId => [label, year, date]
+	 */
+	public function getIssues(array $issueIds, $locale) {
+		$issueIds = array_values(array_unique(array_filter(array_map('intval', $issueIds))));
+		if (!$issueIds) {
+			return array();
+		}
+		$titles = array();
+		foreach (DB::table('issue_settings')->whereIn('issue_id', $issueIds)->where('setting_name', '=', 'title')->get() as $r) {
+			$titles[(int) $r->issue_id][(string) $r->locale] = (string) $r->setting_value;
+		}
+		$out = array();
+		foreach (DB::table('issues')->whereIn('issue_id', $issueIds)->where('journal_id', '=', $this->contextId)->get() as $r) {
+			$id = (int) $r->issue_id;
+			$title = '';
+			if (isset($titles[$id])) {
+				$title = isset($titles[$id][$locale]) && trim($titles[$id][$locale]) !== '' ? $titles[$id][$locale] : (string) reset($titles[$id]);
+			}
+			$parts = array();
+			if (!empty($r->show_volume) && $r->volume !== null && $r->volume !== '') {
+				$parts[] = __('plugins.generic.citationImpact.issue.vol') . ' ' . $r->volume;
+			}
+			if (!empty($r->show_number) && $r->number !== null && $r->number !== '') {
+				$parts[] = __('plugins.generic.citationImpact.issue.no') . ' ' . $r->number;
+			}
+			if (!empty($r->show_year) && $r->year) {
+				$parts[] = '(' . $r->year . ')';
+			}
+			$label = implode(' ', $parts);
+			if ((!empty($r->show_title) || $label === '') && trim($title) !== '') {
+				$label = $label === '' ? trim($title) : $label . ': ' . trim($title);
+			}
+			if ($label === '') {
+				$label = trim(($r->volume ? __('plugins.generic.citationImpact.issue.vol') . ' ' . $r->volume . ' ' : '')
+					. ($r->number ? __('plugins.generic.citationImpact.issue.no') . ' ' . $r->number . ' ' : '') . ($r->year ? '(' . $r->year . ')' : ''));
+			}
+			$out[$id] = array(
+				'label' => $label !== '' ? $label : '#' . $id,
+				'year' => $r->year ? (int) $r->year : null,
+				'date' => $r->date_published ? substr((string) $r->date_published, 0, 10) : '',
+			);
+		}
+		return $out;
+	}
+
+	/**
+	 * ISSNs of this journal (print and online), upper-case, for spotting self-citations.
+	 * @return string[]
+	 */
+	public function getJournalIssns() {
+		$out = array();
+		try {
+			foreach (DB::table('journal_settings')->where('journal_id', '=', $this->contextId)
+				->whereIn('setting_name', array('onlineIssn', 'printIssn'))->get() as $r) {
+				$v = strtoupper(trim((string) $r->setting_value));
+				if (preg_match('/^\d{4}-?\d{3}[\dX]$/', $v)) {
+					$out[] = strlen($v) === 8 ? substr($v, 0, 4) . '-' . substr($v, 4) : $v;
+				}
+			}
+		} catch (\Throwable $e) {
+			error_log('Citation Impact: ' . $e->getMessage());
+		}
+		return array_values(array_unique($out));
 	}
 
 	/**
@@ -455,8 +527,34 @@ class CitationImpactService {
 				}
 			}
 
+			// Citing works (who cites), from OpenAlex, for articles OpenAlex counts as cited.
+			if (in_array('openalex', $this->sources(), true) && !isset($waiting['openalex'])
+				&& ($force || empty($store['oaBackoffUntil']) || $store['oaBackoffUntil'] <= time())) {
+				$r = $this->refreshCiting($store, $deadline, $force);
+				$done += $r['done'];
+				$errors += $r['errors'];
+				$remaining += $r['remaining'];
+				if ($r['stop'] === 'rateLimited') {
+					$waiting['openalex'] = (int) $store['oaBackoffUntil'];
+				}
+			}
+
 			if ($done > 0) {
 				$store['updatedAt'] = time();
+			}
+			// Monthly snapshot for the growth chart, and the summary the sidebar block reads.
+			$summary = $this->summarize($articles, $store['items']);
+			if ($summary['checked'] > 0) {
+				$store['summary'] = $summary;
+				$store['history'][date('Y-m')] = array(
+					'c' => $summary['totalCitations'],
+					'w' => $summary['windowCitations'],
+					'wf' => $summary['windowFrom'],
+					'wt' => $summary['windowTo'],
+					'o' => $summary['openAlexCitations'],
+					'n' => $summary['checked'],
+				);
+				ksort($store['history']);
 			}
 			$this->writeStore($store);
 
@@ -479,6 +577,174 @@ class CitationImpactService {
 			flock($lock, LOCK_UN);
 			fclose($lock);
 		}
+	}
+
+	/**
+	 * Citing works from OpenAlex for every article OpenAlex counts as cited.
+	 * Up to 25 articles per request: works citing any of them, matched back
+	 * through their reference lists. A list is fetched again when the count
+	 * changes or after the re-check interval.
+	 * @return array {done, errors, remaining, stop}
+	 */
+	protected function refreshCiting(array &$store, $deadline, $force) {
+		$ttl = (int) $this->settings['ttlDays'] * 86400;
+		$now = time();
+		$todo = array();
+		foreach ($store['items'] as $k => $m) {
+			if (empty($m['oid']) || empty($m['oc']) || (isset($m['os']) && $m['os'] !== 'ok')) {
+				if (isset($m['cw']) && empty($m['oc'])) {
+					unset($store['items'][$k]['cw'], $store['items'][$k]['cwt'], $store['items'][$k]['cwn']);
+				}
+				continue;
+			}
+			$fresh = isset($m['cwt']) && $now - (int) $m['cwt'] <= $ttl && isset($m['cwn']) && (int) $m['cwn'] === (int) $m['oc'];
+			if ($force || !$fresh) {
+				$todo[$m['oid']] = $k;
+			}
+		}
+		$done = 0;
+		$errors = 0;
+		$stop = null;
+		$batches = array_chunk($todo, 25, true);
+		foreach ($batches as $bi => $batch) {
+			if (microtime(true) >= $deadline) {
+				break;
+			}
+			$found = array();
+			$cursor = '*';
+			$ok = true;
+			for ($page = 0; $page < 5 && $cursor; $page++) {
+				$params = array(
+					'filter' => 'cites:' . implode('|', array_keys($batch)),
+					'select' => 'id,doi,display_name,publication_year,primary_location,authorships,referenced_works',
+					'per-page' => 200,
+					'cursor' => $cursor,
+				);
+				if ($this->settings['openAlexKey'] !== '') {
+					$params['api_key'] = $this->settings['openAlexKey'];
+				} elseif ($this->settings['contactEmail'] !== '') {
+					$params['mailto'] = $this->settings['contactEmail'];
+				}
+				list($code, $body, $headers) = $this->httpGet(self::OPENALEX_API . '/works?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986));
+				$decoded = $code === 200 ? json_decode($body, true) : null;
+				if ($code !== 200 || !is_array($decoded)) {
+					$ok = false;
+					$errors++;
+					if ($code === 429 || $code === 402) {
+						$reset = isset($headers['x-ratelimit-reset']) ? (int) $headers['x-ratelimit-reset'] : 3600;
+						$store['oaBackoffUntil'] = time() + max(900, min(86400, $reset));
+						$stop = 'rateLimited';
+					}
+					break;
+				}
+				foreach (isset($decoded['results']) ? $decoded['results'] : array() as $w) {
+					$entry = self::citingEntry($w);
+					foreach (isset($w['referenced_works']) ? $w['referenced_works'] : array() as $ref) {
+						$oid = preg_replace('~^https?://openalex\.org/~', '', (string) $ref);
+						if (isset($batch[$oid])) {
+							$found[$oid][$entry['id']] = $entry;
+						}
+					}
+				}
+				$cursor = isset($decoded['meta']['next_cursor']) ? $decoded['meta']['next_cursor'] : null;
+				if (empty($decoded['results'])) {
+					$cursor = null;
+				}
+			}
+			if (!$ok) {
+				if ($stop !== null) {
+					break;
+				}
+				// Keep any earlier list; cwn = -1 makes the next run (not this one) try again.
+				foreach ($batch as $k) {
+					$store['items'][$k]['cwt'] = time();
+					$store['items'][$k]['cwn'] = -1;
+				}
+				continue;
+			}
+			foreach ($batch as $oid => $k) {
+				$list = isset($found[$oid]) ? array_values($found[$oid]) : array();
+				usort($list, function ($a, $b) {
+					return ((int) $b['y'] - (int) $a['y']) ?: strcmp($a['t'], $b['t']);
+				});
+				$store['items'][$k]['cw'] = array_slice($list, 0, 50);
+				$store['items'][$k]['cwt'] = time();
+				$store['items'][$k]['cwn'] = (int) $store['items'][$k]['oc'];
+				$done++;
+			}
+			$this->writeStore($store);
+		}
+		// Lists not fetched in this run (out of time, or an error) are still to do.
+		$left = 0;
+		foreach ($todo as $k) {
+			$left += isset($store['items'][$k]['cwt']) && (int) $store['items'][$k]['cwt'] >= $now ? 0 : 1;
+		}
+		return array('done' => $done, 'errors' => $errors, 'remaining' => $stop === 'rateLimited' ? 0 : $left, 'stop' => $stop);
+	}
+
+	/**
+	 * The few fields kept for one citing work.
+	 */
+	protected static function citingEntry(array $w) {
+		$source = isset($w['primary_location']['source']) && is_array($w['primary_location']['source']) ? $w['primary_location']['source'] : array();
+		$authors = isset($w['authorships']) && is_array($w['authorships']) ? $w['authorships'] : array();
+		$first = isset($authors[0]['author']['display_name']) ? (string) $authors[0]['author']['display_name'] : '';
+		$issns = array();
+		foreach (array_merge(isset($source['issn']) ? (array) $source['issn'] : array(), isset($source['issn_l']) ? array($source['issn_l']) : array()) as $i) {
+			if ($i) {
+				$issns[] = strtoupper((string) $i);
+			}
+		}
+		return array(
+			'id' => preg_replace('~^https?://openalex\.org/~', '', (string) (isset($w['id']) ? $w['id'] : '')),
+			't' => trim(strip_tags(html_entity_decode((string) (isset($w['display_name']) ? $w['display_name'] : ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'))),
+			'y' => isset($w['publication_year']) ? (int) $w['publication_year'] : null,
+			'd' => isset($w['doi']) ? self::normalizeDoi($w['doi']) : null,
+			'a' => $first . (count($authors) > 1 ? ' et al.' : ''),
+			's' => isset($source['display_name']) ? (string) $source['display_name'] : '',
+			'i' => array_values(array_unique($issns)),
+		);
+	}
+
+	/**
+	 * Headline figures (main count) for the sidebar block and the monthly history.
+	 */
+	public function summarize(array $articles, array $items) {
+		list($winFrom, $winTo) = self::windowYears($this->settings['windowIncludeCurrent']);
+		$cites = array();
+		$win = array();
+		$total = 0;
+		$winTotal = 0;
+		$oa = 0;
+		foreach ($articles as $a) {
+			$m = $this->merge(isset($items[strtolower($a['doi'])]) ? $items[strtolower($a['doi'])] : null);
+			$oa += (int) $m['co'];
+			if (!$m['ok']) {
+				continue;
+			}
+			$c = (int) $m['c'];
+			$cites[] = $c;
+			$total += $c;
+			$year = $a['date'] !== '' ? (int) substr($a['date'], 0, 4) : 0;
+			if ($year >= $winFrom && $year <= $winTo) {
+				$win[] = $c;
+				$winTotal += $c;
+			}
+		}
+		return array(
+			'checked' => count($cites),
+			'articles' => count($articles),
+			'totalCitations' => $total,
+			'citedArticles' => count(array_filter($cites)),
+			'hIndex' => self::hIndex($cites),
+			'windowFrom' => $winFrom,
+			'windowTo' => $winTo,
+			'windowCitations' => $winTotal,
+			'windowHIndex' => self::hIndex($win),
+			'openAlexCitations' => $oa,
+			'mode' => $this->settings['sources'],
+			'at' => time(),
+		);
 	}
 
 	/**
@@ -725,7 +991,7 @@ class CitationImpactService {
 	 * @return array [int status code (0 on network error), string body, array lower-case headers]
 	 */
 	protected function httpGet($url) {
-		$ua = 'OJS-CitationImpact/2.2' . ($this->settings['contactEmail'] ? ' (mailto:' . $this->settings['contactEmail'] . ')' : '');
+		$ua = 'OJS-CitationImpact/2.5' . ($this->settings['contactEmail'] ? ' (mailto:' . $this->settings['contactEmail'] . ')' : '');
 		try {
 			$client = Application::get()->getHttpClient();
 			$response = $client->request('GET', $url, array(
@@ -771,9 +1037,31 @@ class CitationImpactService {
 		$winCited = 0;
 		$winList = array();
 		// OpenAlex figures, kept apart from the main (Dimensions) count in "separate" mode.
+		// Self-citations: a citing work in this journal (same ISSN, or one of its DOIs).
+		$issns = $this->getJournalIssns();
+		$ownDois = array();
+		foreach ($articles as $a) {
+			$ownDois[strtolower($a['doi'])] = true;
+		}
+		$citingTotal = 0;
+		$citingSelf = 0;
+		$issues = array();
 		$oa = array('checked' => 0, 'total' => 0, 'recent' => 0, 'cited' => 0, 'list' => array(), 'winCites' => 0, 'winCited' => 0, 'winList' => array());
 		foreach ($articles as $a) {
-			$m = $this->merge(isset($items[strtolower($a['doi'])]) ? $items[strtolower($a['doi'])] : null);
+			$raw = isset($items[strtolower($a['doi'])]) ? $items[strtolower($a['doi'])] : null;
+			$m = $this->merge($raw);
+			$citing = array();
+			$self = 0;
+			if ($m['okOpenAlex'] && !empty($raw['cw'])) {
+				foreach ($raw['cw'] as $w) {
+					$w['self'] = ($w['d'] && isset($ownDois[strtolower($w['d'])])) || ($issns && array_intersect($issns, (array) $w['i']));
+					$self += $w['self'] ? 1 : 0;
+					unset($w['i']);
+					$citing[] = $w;
+				}
+				$citingTotal += count($citing);
+				$citingSelf += $self;
+			}
 			$ok = $m['ok'];
 			$c = $ok ? (int) $m['c'] : null;
 			if ($ok) {
@@ -821,7 +1109,23 @@ class CitationImpactService {
 				'recentOpenAlex' => $m['ro'],
 				'openAlexId' => $m['oid'],
 				'inWindow' => $year >= $winFrom && $year <= $winTo,
+				'citing' => $citing,
+				'selfCites' => $self,
 			));
+			if ($a['issueId']) {
+				$iid = $a['issueId'];
+				if (!isset($issues[$iid])) {
+					$issues[$iid] = array('issueId' => $iid, 'articles' => 0, 'checked' => 0, 'cited' => 0, 'citations' => 0, 'openAlex' => 0, 'latest' => '');
+				}
+				$issues[$iid]['articles']++;
+				$issues[$iid]['latest'] = max($issues[$iid]['latest'], $a['date']);
+				if ($m['ok']) {
+					$issues[$iid]['checked']++;
+					$issues[$iid]['citations'] += (int) $m['c'];
+					$issues[$iid]['cited'] += $m['c'] > 0 ? 1 : 0;
+				}
+				$issues[$iid]['openAlex'] += (int) $m['co'];
+			}
 		}
 
 		$h = self::hIndex($cites);
@@ -891,6 +1195,19 @@ class CitationImpactService {
 			$rows[$i]['authors'] = $d['authors'];
 		}
 
+		// Per issue, newest first, labelled like OJS.
+		$labels = $this->getIssues(array_keys($issues), $locale);
+		foreach ($issues as $iid => $v) {
+			$issues[$iid]['label'] = isset($labels[$iid]) ? $labels[$iid]['label'] : '#' . $iid;
+			$issues[$iid]['date'] = isset($labels[$iid]) && $labels[$iid]['date'] !== '' ? $labels[$iid]['date'] : $v['latest'];
+		}
+		usort($issues, function ($a, $b) {
+			return strcmp($b['date'], $a['date']) ?: $b['issueId'] - $a['issueId'];
+		});
+		foreach ($rows as $i => $r) {
+			$rows[$i]['issue'] = $r['issueId'] && isset($labels[$r['issueId']]) ? $labels[$r['issueId']]['label'] : null;
+		}
+
 		return array(
 			'stats' => array(
 				'articles' => count($articles),
@@ -917,6 +1234,9 @@ class CitationImpactService {
 			'withoutDoi' => $this->countWithoutDoi(),
 			'sources' => $this->sources(),
 			'separate' => $this->isSeparate(),
+			'byIssue' => array_values($issues),
+			'selfCitations' => array('citing' => $citingTotal, 'self' => $citingSelf),
+			'history' => isset($store['history']) ? $store['history'] : array(),
 			'openAlex' => $this->isSeparate() && $oa['checked'] ? array(
 				'checked' => $oa['checked'],
 				'totalCitations' => $oa['total'],
@@ -930,6 +1250,20 @@ class CitationImpactService {
 			) : null,
 			'pending' => $this->countChecked($articles, $items) < count($articles),
 		);
+	}
+
+	/**
+	 * Headline figures for the sidebar block: the summary saved by the last
+	 * refresh (cheap), or computed now if it is missing or the settings changed.
+	 */
+	public function summary() {
+		$store = $this->readStore();
+		list($from, $to) = self::windowYears($this->settings['windowIncludeCurrent']);
+		if (!empty($store['summary']) && (int) $store['summary']['windowFrom'] === $from && (int) $store['summary']['windowTo'] === $to
+			&& isset($store['summary']['mode']) && $store['summary']['mode'] === $this->settings['sources']) {
+			return $store['summary'];
+		}
+		return $this->summarize($this->getArticles(), $store['items']);
 	}
 
 	/**

@@ -22,7 +22,7 @@ use Throwable;
 
 class CitationImpactHandler extends Handler {
 
-	const VERSION = '2.4.2';
+	const VERSION = '2.5.0';
 
 	/** Steps of the ordinal ramp, --ci-r0 (weak) … --ci-r8 (strong). */
 	const RAMP_STEPS = 9;
@@ -59,6 +59,7 @@ class CitationImpactHandler extends Handler {
 					'windowCitedArticles' => 0, 'windowHIndex' => 0, 'windowI10Index' => 0, 'maxCitations' => 0),
 				'distribution' => array(), 'byYear' => array(), 'rows' => array(), 'updatedAt' => null, 'license' => null, 'withoutDoi' => 0,
 				'sources' => $service->sources(), 'pending' => true, 'separate' => $service->isSeparate(), 'openAlex' => null,
+				'byIssue' => array(), 'selfCitations' => array('citing' => 0, 'self' => 0), 'history' => array(),
 			);
 		}
 		$separate = !empty($data['separate']) && in_array('openalex', $data['sources'], true);
@@ -83,6 +84,11 @@ class CitationImpactHandler extends Handler {
 				'co' => $r['citesOpenAlex'],
 				'oi' => $r['openAlexId'],
 				'ro' => $r['recentOpenAlex'],
+				'is' => $r['issue'],
+				'sc' => $r['selfCites'],
+				'cw' => array_map(function ($w) {
+					return array('t' => $w['t'], 'y' => $w['y'], 'd' => $w['d'], 'a' => $w['a'], 's' => $w['s'], 'id' => $w['id'], 'self' => (bool) $w['self']);
+				}, $r['citing']),
 			);
 		}
 
@@ -191,6 +197,29 @@ class CitationImpactHandler extends Handler {
 			}, $data['byYear'])),
 			'ciChartWide' => self::yearChart($data['byYear'], $fmt, 720, 'wide'),
 			'ciChartNarrow' => self::yearChart($data['byYear'], $fmt, 360, 'narrow'),
+			'ciByIssue' => array_map(function ($v) use ($fmt) {
+				return array(
+					'label' => $v['label'],
+					'articles' => $fmt($v['articles']),
+					'cited' => $fmt($v['cited']),
+					'citedPct' => $v['checked'] ? round($v['cited'] / $v['checked'] * 100) : 0,
+					'citations' => $fmt($v['citations']),
+					'openAlex' => $fmt($v['openAlex']),
+				);
+			}, $data['byIssue']),
+			'ciSelf' => $data['selfCitations']['citing'] ? array(
+				'self' => $fmt($data['selfCitations']['self']),
+				'citing' => $fmt($data['selfCitations']['citing']),
+				'pct' => round($data['selfCitations']['self'] / $data['selfCitations']['citing'] * 100),
+			) : null,
+			'ciHistoryWide' => self::historyChart($data['history'], $fmt, 720, $separate),
+			'ciHistoryNarrow' => self::historyChart($data['history'], $fmt, 360, $separate),
+			'ciHistoryPoints' => count($data['history']),
+			'ciHistoryTable' => array_reverse(array_map(function ($month, $h) use ($fmt) {
+				return array('month' => self::monthLabel($month), 'c' => $fmt($h['c']), 'w' => $fmt($h['w']), 'wf' => $h['wf'], 'wt' => $h['wt'], 'o' => $fmt($h['o']));
+			}, array_keys($data['history']), array_values($data['history']))),
+			'ciCitingCsvUrl' => $dispatcher->url($request, Application::ROUTE_PAGE, null, $plugin->getPagePath($context->getId()), 'citing'),
+			'ciHasOpenAlex' => in_array('openalex', $data['sources'], true),
 			'ciYearFrom' => $data['byYear'] ? $data['byYear'][0]['year'] : null,
 			'ciYearTo' => $data['byYear'] ? $data['byYear'][count($data['byYear']) - 1]['year'] : null,
 			'ciDistribution' => self::distribution($data['distribution'], $s['checked'], $fmt),
@@ -212,6 +241,10 @@ class CitationImpactHandler extends Handler {
 					'openalex' => __('plugins.generic.citationImpact.openAlexDetails'),
 					'dimN' => __('plugins.generic.citationImpact.sourceCount', array('source' => 'Dimensions')),
 					'oaN' => __('plugins.generic.citationImpact.sourceCount', array('source' => 'OpenAlex')),
+					'citingN' => __('plugins.generic.citationImpact.citing.summary'),
+					'self' => __('plugins.generic.citationImpact.citing.self'),
+					'selfN' => __('plugins.generic.citationImpact.citing.selfN'),
+					'issue' => __('plugins.generic.citationImpact.col.issue'),
 					'fcrTimes' => __('plugins.generic.citationImpact.fcrTimes'),
 				),
 			), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE),
@@ -321,6 +354,7 @@ class CitationImpactHandler extends Handler {
 			__('plugins.generic.citationImpact.csv.authors'),
 			__('plugins.generic.citationImpact.col.year'),
 			__('plugins.generic.citationImpact.csv.date'),
+			__('plugins.generic.citationImpact.col.issue'),
 			'DOI',
 			__('plugins.generic.citationImpact.csv.url'),
 		);
@@ -346,6 +380,8 @@ class CitationImpactHandler extends Handler {
 			$head[] = __('plugins.generic.citationImpact.csv.link', array('source' => 'Dimensions'));
 		}
 		if ($openAlex) {
+			$head[] = __('plugins.generic.citationImpact.csv.citingFound');
+			$head[] = __('plugins.generic.citationImpact.csv.selfCites');
 			$head[] = __('plugins.generic.citationImpact.csv.link', array('source' => 'OpenAlex'));
 		}
 
@@ -371,6 +407,7 @@ class CitationImpactHandler extends Handler {
 				implode('; ', $r['authors']),
 				$r['year'],
 				$r['date'],
+				(string) $r['issue'],
 				$r['doi'],
 				$dispatcher->url($request, Application::ROUTE_PAGE, null, 'article', 'view', array((string) ($r['urlPath'] ? $r['urlPath'] : $r['submissionId']))),
 			);
@@ -396,12 +433,158 @@ class CitationImpactHandler extends Handler {
 				$row[] = 'https://badge.dimensions.ai/details/doi/' . $r['doi'];
 			}
 			if ($openAlex) {
+				$row[] = $num(count($r['citing']));
+				$row[] = $num($r['selfCites']);
 				$row[] = $r['openAlexId'] ? 'https://openalex.org/works?filter=cites:' . $r['openAlexId'] : '';
 			}
 			$put($row);
 		}
 		fclose($out);
 		exit;
+	}
+
+	/**
+	 * Every citing work found in OpenAlex, one row per (article, citing work),
+	 * with a self-citation flag: /{journal}/{pagePath}/citing
+	 */
+	public function citing($args, $request) {
+		$context = $request->getContext();
+		if (!$context) {
+			throw new NotFoundHttpException();
+		}
+		$locale = Locale::getLocale();
+		$sep = (string) $request->getUserVar('sep');
+		$sep = $sep === 'comma' ? ',' : ($sep === 'semicolon' ? ';' : (strpos($locale, 'id') === 0 ? ';' : ','));
+		$service = new CitationImpactService($context->getId());
+		$data = $service->build($locale, true);
+		$yes = __('plugins.generic.citationImpact.csv.yes');
+		$no = __('plugins.generic.citationImpact.csv.no');
+		$out = self::csvStart('citing-works-' . preg_replace('/[^a-z0-9_-]+/i', '-', $context->getPath()) . '-' . date('Y-m-d') . '.csv');
+		self::csvRow($out, $sep, array(
+			__('plugins.generic.citationImpact.csv.rank'),
+			__('plugins.generic.citationImpact.csv.citedTitle'),
+			__('plugins.generic.citationImpact.csv.citedDoi'),
+			__('plugins.generic.citationImpact.csv.citingTitle'),
+			__('plugins.generic.citationImpact.csv.citingAuthors'),
+			__('plugins.generic.citationImpact.csv.citingSource'),
+			__('plugins.generic.citationImpact.col.year'),
+			__('plugins.generic.citationImpact.csv.citingDoi'),
+			__('plugins.generic.citationImpact.citing.self'),
+			'OpenAlex',
+		));
+		$n = 0;
+		foreach ($data['rows'] as $r) {
+			foreach ($r['citing'] as $w) {
+				self::csvRow($out, $sep, array(
+					++$n,
+					$r['title'] !== '' ? $r['title'] : $r['doi'],
+					$r['doi'],
+					$w['t'],
+					$w['a'],
+					$w['s'],
+					$w['y'],
+					$w['d'] ? 'https://doi.org/' . $w['d'] : '',
+					$w['self'] ? $yes : $no,
+					$w['id'] ? 'https://openalex.org/' . $w['id'] : '',
+				));
+			}
+		}
+		fclose($out);
+		exit;
+	}
+
+	/**
+	 * Send CSV headers and the UTF-8 BOM; return the output stream.
+	 */
+	protected static function csvStart($filename) {
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		header('Cache-Control: no-cache');
+		header('X-LiteSpeed-Cache-Control: no-cache');
+		$out = fopen('php://output', 'w');
+		fwrite($out, "\xEF\xBB\xBF");
+		return $out;
+	}
+
+	/**
+	 * One CSV row; text that a spreadsheet would run as a formula is neutralised.
+	 */
+	protected static function csvRow($out, $sep, array $row) {
+		fputcsv($out, array_map(function ($v) {
+			$v = (string) $v;
+			return preg_match('/^[=+\-@\t\r]/', $v) ? "'" . $v : $v;
+		}, $row), $sep, '"', '');
+	}
+
+	/**
+	 * "Nov 2026" in the page language.
+	 */
+	protected static function monthLabel($ym) {
+		list($y, $m) = array_map('intval', explode('-', $ym));
+		$names = explode(',', __('plugins.generic.citationImpact.months'));
+		return (isset($names[$m - 1]) ? trim($names[$m - 1]) : $m) . ' ' . $y;
+	}
+
+	/**
+	 * Monthly totals as a line chart: the main count (solid, accent) and, in
+	 * separate mode, OpenAlex (dashed, neutral). Needs two months of data.
+	 * @return string SVG, or '' with fewer than two points
+	 */
+	protected static function historyChart(array $history, $fmt, $W, $separate) {
+		if (count($history) < 2) {
+			return '';
+		}
+		$narrow = $W < 500;
+		$H = $narrow ? 200 : 240;
+		$L = 44; $R = 16; $T = 20; $B = 28;
+		$pw = $W - $L - $R;
+		$ph = $H - $T - $B;
+		$months = array_keys($history);
+		$n = count($months);
+		$maxV = 1;
+		foreach ($history as $h) {
+			$maxV = max($maxV, (int) $h['c'], $separate ? (int) $h['o'] : 0);
+		}
+		$max = self::niceMax($maxV);
+		$x = function ($i) use ($L, $pw, $n) {
+			return round($L + ($n === 1 ? $pw / 2 : $pw * $i / ($n - 1)), 1);
+		};
+		$y = function ($v) use ($T, $ph, $max) {
+			return round($T + $ph - $ph * $v / $max, 1);
+		};
+		$esc = array(__CLASS__, 'esc');
+		$svg = '<svg class="ci-chart ci-chart-' . ($narrow ? 'narrow' : 'wide') . '" viewBox="0 0 ' . $W . ' ' . $H . '" role="img" aria-label="' . $esc(__('plugins.generic.citationImpact.history')) . '">';
+		for ($i = 0; $i <= 4; $i++) {
+			$yy = round($T + $ph - $ph * $i / 4, 1);
+			$svg .= '<line class="ci-grid' . ($i === 0 ? ' ci-base' : '') . '" x1="' . $L . '" x2="' . ($W - $R) . '" y1="' . $yy . '" y2="' . $yy . '"/>';
+			$svg .= '<text class="ci-tick" x="' . ($L - 8) . '" y="' . ($yy + 4) . '" text-anchor="end">' . $esc($fmt($max * $i / 4)) . '</text>';
+		}
+		$series = array(array('c', 'ci-line'));
+		if ($separate) {
+			array_unshift($series, array('o', 'ci-line ci-line-oa'));
+		}
+		foreach ($series as $sr) {
+			$pts = array();
+			foreach ($months as $i => $mo) {
+				$pts[] = $x($i) . ',' . $y((int) $history[$mo][$sr[0]]);
+			}
+			$svg .= '<polyline class="' . $sr[1] . '" fill="none" points="' . implode(' ', $pts) . '"/>';
+		}
+		$every = (int) ceil($n / ($narrow ? 4 : 8));
+		foreach ($months as $i => $mo) {
+			$h = $history[$mo];
+			$tip = self::monthLabel($mo) . ' · ' . $fmt($h['c']) . ' ' . __('plugins.generic.citationImpact.chart.citations')
+				. ($separate ? ' · OpenAlex ' . $fmt($h['o']) : '');
+			$svg .= '<g class="ci-bar" tabindex="0" data-tip="' . $esc($tip) . '"><title>' . $esc($tip) . '</title>'
+				. '<rect class="ci-hit" x="' . round($x($i) - $pw / max(1, $n - 1) / 2, 1) . '" y="' . $T . '" width="' . round($pw / max(1, $n - 1), 1) . '" height="' . $ph . '"/>'
+				. '<circle class="ci-dot ci-mark" cx="' . $x($i) . '" cy="' . $y((int) $h['c']) . '" r="3.5"/></g>';
+			if (($n - 1 - $i) % $every === 0) {
+				$svg .= '<text class="ci-tick" x="' . $x($i) . '" y="' . ($H - 8) . '" text-anchor="middle">' . $esc(self::monthLabel($mo)) . '</text>';
+			}
+		}
+		$last = $history[$months[$n - 1]];
+		$svg .= '<text class="ci-val" x="' . $x($n - 1) . '" y="' . ($y((int) $last['c']) - 9) . '" text-anchor="end">' . $esc($fmt($last['c'])) . '</text>';
+		return $svg . '</svg>';
 	}
 
 	/**
