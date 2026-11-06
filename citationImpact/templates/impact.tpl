@@ -27,19 +27,21 @@
 			<div class="cimpact-card cimpact-empty">{translate key="plugins.generic.citationImpact.empty"}</div>
 		{else}
 			<section class="cimpact-overview" aria-label="{translate key="plugins.generic.citationImpact.summary"}">
+				{* Hero: citations in the last 3 years (ARJUNA "Dampak Ilmiah"), the figure assessors look at. *}
 				<div class="cimpact-card cimpact-hero">
-					<div class="cimpact-hero-k">{translate key="plugins.generic.citationImpact.stat.total"}{if $ciSeparate} <span class="cimpact-src">Dimensions</span>{/if}</div>
-					<div class="cimpact-hero-v">{$ciStats.totalCitations}</div>
-					<div class="cimpact-hero-sub">{translate key="plugins.generic.citationImpact.stat.recentLine" number=$ciStats.recentCitations}</div>
+					<div class="cimpact-hero-k">{translate key="plugins.generic.citationImpact.hero.window"}<span class="cimpact-win">{$ciStats.windowFrom}–{$ciStats.windowTo}</span>{if $ciSeparate} <span class="cimpact-src">Dimensions</span>{/if}</div>
+					<div class="cimpact-hero-v">{$ciStats.windowCitations}</div>
+					<div class="cimpact-hero-sub">{translate key="plugins.generic.citationImpact.hero.windowSub" from=$ciStats.windowFrom to=$ciStats.windowTo articles=$ciStats.windowArticles}</div>
+					<div class="cimpact-hero-all">{translate key="plugins.generic.citationImpact.hero.allTime" number=$ciStats.totalCitations articles=$ciStats.checked}</div>
 					<dl class="cimpact-mini">
-						<div><dt>{translate key="plugins.generic.citationImpact.stat.mean"}</dt><dd>{$ciStats.mean}</dd></div>
-						<div><dt>{translate key="plugins.generic.citationImpact.stat.max"}</dt><dd>{$ciStats.max}</dd></div>
+						<div><dt>{translate key="plugins.generic.citationImpact.hero.windowH"}</dt><dd>{$ciStats.windowHIndex}</dd></div>
+						<div><dt>{translate key="plugins.generic.citationImpact.hero.windowI10"}</dt><dd>{$ciStats.windowI10Index}</dd></div>
 					</dl>
 					<div class="cimpact-ringrow">
-						{$ciRing}
+						{$ciRingWindow}
 						<div>
-							<div class="cimpact-ring-k">{translate key="plugins.generic.citationImpact.stat.citedLine" cited=$ciStats.citedArticles total=$ciStats.checked}</div>
-							<div class="cimpact-ring-s">{translate key="plugins.generic.citationImpact.stat.citedNote"}</div>
+							<div class="cimpact-ring-k">{translate key="plugins.generic.citationImpact.stat.citedLine" cited=$ciStats.windowCitedArticles total=$ciStats.windowArticles}</div>
+							<div class="cimpact-ring-s">{translate key="plugins.generic.citationImpact.hero.windowCitedNote" from=$ciStats.windowFrom to=$ciStats.windowTo}</div>
 						</div>
 					</div>
 				</div>
@@ -73,8 +75,8 @@
 				</div>
 				<p class="cimpact-sub">{translate key="plugins.generic.citationImpact.oa.note"}</p>
 				<dl class="cimpact-oa-grid">
-					<div><dt>{translate key="plugins.generic.citationImpact.stat.total"}</dt><dd>{$ciOa.totalCitations|escape}</dd></div>
 					<div><dt>{translate key="plugins.generic.citationImpact.oa.window" from=$ciStats.windowFrom to=$ciStats.windowTo}</dt><dd>{$ciOa.windowCitations|escape}</dd></div>
+					<div><dt>{translate key="plugins.generic.citationImpact.stat.total"}</dt><dd>{$ciOa.totalCitations|escape}</dd></div>
 					<div><dt>{translate key="plugins.generic.citationImpact.index.cited"}</dt><dd>{$ciOa.citedArticles|escape} <small>/ {$ciOa.checked|escape}</small></dd></div>
 					<div><dt>h-index</dt><dd>{$ciOa.hIndex|escape}</dd></div>
 				</dl>

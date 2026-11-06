@@ -22,7 +22,7 @@ use Throwable;
 
 class CitationImpactHandler extends Handler {
 
-	const VERSION = '2.3.0';
+	const VERSION = '2.4.0';
 
 	/** Steps of the ordinal ramp, --ci-r0 (weak) … --ci-r8 (strong). */
 	const RAMP_STEPS = 9;
@@ -163,6 +163,7 @@ class CitationImpactHandler extends Handler {
 				'windowTo' => (int) $s['windowTo'],
 			),
 			'ciRing' => self::ring($citedPct),
+			'ciRingWindow' => self::ring($winCitedPct),
 			'ciHasData' => $s['checked'] > 0,
 			'ciPending' => $data['pending'],
 			'ciUpdatedAt' => $data['updatedAt'],
