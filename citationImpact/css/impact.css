@@ -71,9 +71,10 @@
 .cimpact-hero-sub { color: var(--ci-ink-2); font-size: .9em; }
 .cimpact-hero-k .cimpact-win {
 	display: inline-block; margin-left: .35em; padding: .05em .6em; border-radius: 999px; vertical-align: .05em;
-	background: var(--ci-accent); color: var(--ci-card); font-size: .85em; font-weight: 700; font-variant-numeric: tabular-nums;
+	background: var(--ci-accent-soft); color: var(--ci-accent-ink); font-size: .85em; font-weight: 600; font-variant-numeric: tabular-nums;
 }
-.cimpact-hero .cimpact-hero-v { color: var(--ci-accent-ink); }
+/* Large but light: regular weight in the accent colour (large text needs 3:1, which --ci-accent keeps). */
+.cimpact-hero .cimpact-hero-v { font-weight: 400; letter-spacing: -.01em; color: var(--ci-accent); }
 .cimpact-hero-all { margin-top: .35em; font-size: .85em; color: var(--ci-ink-3); }
 .cimpact-hero-all strong { color: var(--ci-ink-2); }
 .cimpact-mini { display: grid; grid-template-columns: 1fr 1fr; gap: .75em; margin: 1.1em 0 0; }
