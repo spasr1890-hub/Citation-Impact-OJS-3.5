@@ -51,9 +51,14 @@ class CitationImpactBlockPlugin extends BlockPlugin
         return $this->parentPlugin->getPluginPath();
     }
 
-    public function getTemplatePath($inCore = false): string
+    /**
+     * The parent plugin's template folder. OJS registers a Smarty resource per
+     * plugin path, and this block shares the parent's path: a different folder
+     * here would replace the parent's resource and break all its templates.
+     */
+    public function getTemplatePath($inCore = false)
     {
-        return "{$this->parentPlugin->getTemplatePath($inCore)}/templates";
+        return $this->parentPlugin->getTemplatePath($inCore);
     }
 
     public function getBlockTemplateFilename(): string
